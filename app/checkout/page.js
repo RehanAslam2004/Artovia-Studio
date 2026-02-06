@@ -122,6 +122,10 @@ export default function CheckoutPage() {
             newErrors.phone = 'Please enter a valid Pakistani phone number';
         }
 
+        if (!formData.transactionId.trim()) {
+            newErrors.transactionId = 'Transaction ID is required for verification';
+        }
+
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
@@ -521,17 +525,18 @@ export default function CheckoutPage() {
 
                                     {/* Transaction ID */}
                                     <div className="mt-4">
-                                        <Label htmlFor="transactionId">Transaction ID (Optional)</Label>
+                                        <Label htmlFor="transactionId" required>Transaction ID</Label>
                                         <Input
                                             id="transactionId"
                                             name="transactionId"
                                             value={formData.transactionId}
                                             onChange={handleInputChange}
                                             placeholder="Enter transaction ID after payment"
+                                            error={errors.transactionId}
                                             className="mt-1"
                                         />
                                         <p className="mt-1 text-xs text-gray-500">
-                                            Enter your transaction ID to speed up order processing
+                                            Enter your transaction ID to verify payment
                                         </p>
                                     </div>
                                 </CardContent>

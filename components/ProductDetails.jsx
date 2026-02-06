@@ -21,6 +21,8 @@ import { useCart } from '@/hooks/useCart';
 import { toast } from '@/hooks/useToast';
 import { formatPrice } from '@/lib/utils';
 import ProductCard from '@/components/ProductCard';
+import ReviewForm from '@/components/reviews/ReviewForm';
+import ReviewList from '@/components/reviews/ReviewList';
 
 // Product features/benefits
 const productFeatures = [
@@ -29,7 +31,7 @@ const productFeatures = [
     { icon: Clock, text: 'Fast delivery' },
 ];
 
-export default function ProductDetails({ product, relatedProducts }) {
+export default function ProductDetails({ product, relatedProducts, initialReviews = [], ratingStats = { averageRating: 0, totalReviews: 0 } }) {
     const router = useRouter();
     const { addToCart, isInCart } = useCart();
 
@@ -324,6 +326,41 @@ export default function ProductDetails({ product, relatedProducts }) {
                         </div>
                     </motion.div>
                 </div>
+
+                {/* Reviews Section */}
+                <section className="mt-16 border-t border-gray-200 pt-16 dark:border-gray-800" id="reviews">
+                    <div className="flex items-center justify-between mb-8">
+                        <div>
+                            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                                Customer Reviews
+                            </h2>
+                            <div className="flex items-center gap-2 mt-2">
+                                <div className="flex items-center">
+                                    <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
+                                    <span className="ml-1 font-bold text-lg">{ratingStats?.averageRating || 0}</span>
+                                </div>
+                                <span className="text-gray-500">• {ratingStats?.totalReviews || 0} reviews</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="grid gap-12 lg:grid-cols-12">
+                        {/* Review List - Takes up 7/12 columns on large screens */}
+                        <div className="lg:col-span-7">
+                            <ReviewList reviews={initialReviews} />
+                        </div>
+
+                        {/* Review Form - Takes up 5/12 columns, sticky on large screens */}
+                        <div className="lg:col-span-5">
+                            <div className="sticky top-24">
+                                <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
+                                    Write a Review
+                                </h3>
+                                <ReviewForm productId={product.id} />
+                            </div>
+                        </div>
+                    </div>
+                </section>
 
                 {/* Related Products */}
                 {relatedProducts && relatedProducts.length > 0 && (

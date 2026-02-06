@@ -8,7 +8,8 @@ import { NextResponse } from 'next/server';
 import {
     sendOrderConfirmationEmail,
     sendOrderApprovalEmail,
-    sendAdminOrderNotification
+    sendAdminOrderNotification,
+    sendWelcomeEmail
 } from '@/lib/email';
 
 export async function POST(request) {
@@ -16,9 +17,21 @@ export async function POST(request) {
         const body = await request.json();
         const { type, order, downloadLinks } = body;
 
-        if (!type || !order) {
+        console.log('📧 Email API Request:', { type, hasOrder: !!order, hasUser: !!body.user });
+
+        if (!type) {
+            console.error('❌ Missing email type', body);
             return NextResponse.json(
-                { error: 'Missing required fields: type and order' },
+                { error: 'Missing email type' },
+                { status: 400 }
+            );
+        }
+
+        // Validate required fields based on type
+        if (type !== 'welcome' && !order) {
+            console.error('❌ Missing order data for type:', type);
+            return NextResponse.json(
+                { error: 'Missing order data' },
                 { status: 400 }
             );
         }
@@ -26,6 +39,16 @@ export async function POST(request) {
         let result;
 
         switch (type) {
+            case 'welcome':
+                // Send welcome email to new user
+                console.log('📧 Sending welcome email to:', body.user?.email);
+                if (body.user) {
+                    result = await sendWelcomeEmail(body.user);
+                } else {
+                    result = { success: false, error: 'Missing user data for welcome email' };
+                }
+                break;
+
             case 'order_confirmation':
                 // Send confirmation to customer + notification to admin
                 result = await sendOrderConfirmationEmail(order);

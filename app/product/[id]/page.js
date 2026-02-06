@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
 import ProductDetails from '@/components/ProductDetails';
 import { getProductById, getAllProducts } from '@/lib/products';
+import { getProductReviews } from '@/lib/reviews';
 
 // Dynamic Metadata Generation
 export async function generateMetadata({ params }) {
@@ -71,6 +72,22 @@ export default async function ProductPage({ params }) {
         : [];
 
 
+    // Fetch reviews
+    let reviews = [];
+    let averageRating = 0;
+    let totalReviews = 0;
+
+    try {
+        const reviewData = await getProductReviews(productId);
+        if (reviewData.success) {
+            reviews = reviewData.reviews;
+            averageRating = reviewData.averageRating;
+            totalReviews = reviewData.totalReviews;
+        }
+    } catch (error) {
+        console.error('Failed to fetch reviews:', error);
+    }
+
     // JSON-LD Structured Data
     const jsonLd = {
         '@context': 'https://schema.org',
@@ -82,6 +99,11 @@ export default async function ProductPage({ params }) {
             '@type': 'Brand',
             name: 'Artovia Studio'
         },
+        aggregateRating: totalReviews > 0 ? {
+            '@type': 'AggregateRating',
+            ratingValue: averageRating,
+            reviewCount: totalReviews
+        } : undefined,
         offers: {
             '@type': 'Offer',
             url: `${process.env.NEXT_PUBLIC_SITE_URL}/product/${product.id}`,
@@ -97,7 +119,12 @@ export default async function ProductPage({ params }) {
                 type="application/ld+json"
                 dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
             />
-            <ProductDetails product={product} relatedProducts={relatedProducts} />
+            <ProductDetails
+                product={product}
+                relatedProducts={relatedProducts}
+                initialReviews={reviews}
+                ratingStats={{ averageRating, totalReviews }}
+            />
         </>
     );
 }

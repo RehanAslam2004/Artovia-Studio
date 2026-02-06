@@ -21,7 +21,8 @@ import {
     ChevronDown,
     Link as LinkIcon,
     Plus,
-    Trash2
+    Trash2,
+    CreditCard
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -322,7 +323,7 @@ export default function AdminOrdersPage() {
                     <div className="flex justify-center py-12">
                         <Loader size="lg" />
                     </div>
-                ) : filteredOrders.length > 0 ? (
+                ) : Array.isArray(filteredOrders) && filteredOrders.length > 0 ? (
                     <div className="space-y-4">
                         {filteredOrders.map((order) => (
                             <motion.div
@@ -361,6 +362,14 @@ export default function AdminOrdersPage() {
                                                 <p className="text-xs text-gray-500 mt-1">
                                                     {formatDate(order.createdAt)}
                                                 </p>
+                                                {order.transactionId && (
+                                                    <div className="mt-2 flex items-center">
+                                                        <span className="inline-flex items-center gap-1 rounded-md bg-purple-500/10 px-2 py-1 text-xs font-medium text-purple-400 ring-1 ring-inset ring-purple-500/20">
+                                                            <CreditCard className="h-3 w-3 mr-1" />
+                                                            ID: {order.transactionId}
+                                                        </span>
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
 
@@ -663,6 +672,6 @@ export default function AdminOrdersPage() {
                     </motion.div>
                 )}
             </AnimatePresence>
-        </AdminLayout>
+        </AdminLayout >
     );
 }

@@ -40,6 +40,8 @@ export default function AccountPage() {
     // Redirect if not logged in
     useEffect(() => {
         if (!authLoading && !isAuthenticated) {
+            // Clear any stale cookies that might be causing a middleware loop
+            document.cookie = 'user_role=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
             router.push('/login');
         }
     }, [isAuthenticated, authLoading, router]);
@@ -107,7 +109,14 @@ export default function AccountPage() {
     }
 
     if (!isAuthenticated) {
-        return null;
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900/50">
+                <div className="text-center">
+                    <Loader size="lg" />
+                    <p className="mt-4 text-gray-500">Redirecting to login...</p>
+                </div>
+            </div>
+        );
     }
 
     return (
