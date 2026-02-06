@@ -256,6 +256,30 @@ export default function AdminOrdersPage() {
         }
     };
 
+    // Handle Cancel
+    const handleCancelOrder = async (orderId) => {
+        if (!confirm('Are you sure you want to cancel this order? This action cannot be undone.')) return;
+
+        setLoading(true); // Re-use loading state or add specific one
+        try {
+            const result = await cancelOrder(orderId);
+            if (result.success) {
+                toast.success({ title: 'Order cancelled successfully' });
+                const updatedOrders = orders.map(o =>
+                    o.id === orderId ? { ...o, status: 'cancelled' } : o
+                );
+                setOrders(updatedOrders);
+            } else {
+                throw new Error(result.error);
+            }
+        } catch (error) {
+            console.error('Cancel error:', error);
+            toast.error({ title: 'Failed to cancel order' });
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <AdminLayout>
             <div className="space-y-6">
@@ -284,8 +308,8 @@ export default function AdminOrdersPage() {
                             key={filter.value}
                             onClick={() => setStatusFilter(filter.value)}
                             className={`whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition-colors ${statusFilter === filter.value
-                                    ? 'bg-pink-600 text-white'
-                                    : 'bg-gray-900 text-gray-400 hover:bg-gray-800 hover:text-white'
+                                ? 'bg-pink-600 text-white'
+                                : 'bg-gray-900 text-gray-400 hover:bg-gray-800 hover:text-white'
                                 }`}
                         >
                             {filter.label}
@@ -313,8 +337,8 @@ export default function AdminOrdersPage() {
                                         {/* Order Info */}
                                         <div className="flex items-start gap-4">
                                             <div className={`p-3 rounded-full ${order.status === 'approved' ? 'bg-green-500/10 text-green-500' :
-                                                    order.status === 'cancelled' ? 'bg-red-500/10 text-red-500' :
-                                                        'bg-yellow-500/10 text-yellow-500'
+                                                order.status === 'cancelled' ? 'bg-red-500/10 text-red-500' :
+                                                    'bg-yellow-500/10 text-yellow-500'
                                                 }`}>
                                                 {order.status === 'approved' ? <Check className="h-6 w-6" /> :
                                                     order.status === 'cancelled' ? <X className="h-6 w-6" /> :
@@ -360,13 +384,23 @@ export default function AdminOrdersPage() {
                                                 </Button>
 
                                                 {order.status === 'pending' && (
-                                                    <Button
-                                                        size="sm"
-                                                        onClick={() => openApprovalModal(order)}
-                                                        className="bg-purple-600 hover:bg-purple-700 text-white"
-                                                    >
-                                                        Approve
-                                                    </Button>
+                                                    <>
+                                                        <Button
+                                                            size="sm"
+                                                            onClick={() => openApprovalModal(order)}
+                                                            className="bg-purple-600 hover:bg-purple-700 text-white"
+                                                        >
+                                                            Approve
+                                                        </Button>
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="sm"
+                                                            onClick={() => handleCancelOrder(order.id)}
+                                                            className="text-red-400 hover:text-red-300 hover:bg-red-950/30"
+                                                        >
+                                                            Cancel
+                                                        </Button>
+                                                    </>
                                                 )}
                                             </div>
                                         </div>
@@ -546,22 +580,47 @@ export default function AdminOrdersPage() {
                                                 ) : (
                                                     <div className="flex gap-2 items-center">
                                                         <div className="relative flex-1">
-                                                            <Input
+                                                            <input
                                                                 type="file"
+                                                                id={`file-upload-${index}`}
+                                                                className="hidden"
                                                                 onChange={(e) => handleFileUpload(index, e.target.files[0])}
-                                                                className="bg-gray-800 border-gray-700 text-white file:text-gray-300 file:bg-gray-700 file:border-0 file:rounded-md file:mr-2 file:px-2 file:text-xs"
                                                             />
-                                                            {isUploading && (
-                                                                <div className="absolute right-2 top-2">
-                                                                    <Loader size="sm" />
-                                                                </div>
-                                                            )}
+                                                            <label
+                                                                htmlFor={`file-upload-${index}`}
+                                                                className={`flex items-center justify-center w-full px-4 py-2 text-sm font-medium text-white transition-colors border rounded-md cursor-pointer ${link.url
+                                                                    ? 'bg-gray-800 border-green-500/50 text-green-400 hover:bg-gray-700'
+                                                                    : 'bg-gray-800 border-gray-700 hover:bg-gray-700 hover:border-gray-600'
+                                                                    }`}
+                                                            >
+                                                                {isUploading ? (
+                                                                    <span className="flex items-center">
+                                                                        <Loader size="sm" className="mr-2" />
+                                                                        Uploading...
+                                                                    </span>
+                                                                ) : link.url ? (
+                                                                    <span className="flex items-center">
+                                                                        <Check className="w-4 h-4 mr-2" />
+                                                                        File Uploaded
+                                                                    </span>
+                                                                ) : (
+                                                                    <span className="flex items-center">
+                                                                        <Download className="w-4 h-4 mr-2" />
+                                                                        Choose File to Upload
+                                                                    </span>
+                                                                )}
+                                                            </label>
                                                         </div>
                                                         {link.url && (
-                                                            <div className="text-green-400 text-xs flex items-center">
-                                                                <Check className="h-4 w-4 mr-1" />
-                                                                Uploaded
-                                                            </div>
+                                                            <a
+                                                                href={link.url}
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
+                                                                className="p-2 text-gray-400 hover:text-white bg-gray-800 rounded-md border border-gray-700 hover:border-gray-600 transition-colors"
+                                                                title="View File"
+                                                            >
+                                                                <Eye className="w-4 h-4" />
+                                                            </a>
                                                         )}
                                                     </div>
                                                 )}

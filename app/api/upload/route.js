@@ -7,6 +7,9 @@
 
 import { v2 as cloudinary } from 'cloudinary';
 import { NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
+
+// ...
 
 // Configure Cloudinary
 cloudinary.config({
@@ -17,6 +20,16 @@ cloudinary.config({
 
 export async function POST(request) {
     try {
+        const cookieStore = cookies();
+        const userRole = cookieStore.get('user_role')?.value;
+
+        if (userRole !== 'admin') {
+            return NextResponse.json(
+                { success: false, error: 'Unauthorized access' },
+                { status: 401 }
+            );
+        }
+
         const formData = await request.formData();
         const file = formData.get('file');
         const folder = formData.get('folder') || 'products';
@@ -62,6 +75,16 @@ export async function POST(request) {
 
 export async function DELETE(request) {
     try {
+        const cookieStore = cookies();
+        const userRole = cookieStore.get('user_role')?.value;
+
+        if (userRole !== 'admin') {
+            return NextResponse.json(
+                { success: false, error: 'Unauthorized access' },
+                { status: 401 }
+            );
+        }
+
         const { publicId } = await request.json();
 
         if (!publicId) {

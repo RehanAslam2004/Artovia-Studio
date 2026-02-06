@@ -11,6 +11,8 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { Toaster } from '@/components/ui/Toaster';
 import ClientProviders from './providers';
+import LayoutWrapper from '@/components/LayoutWrapper';
+import MainWrapper from '@/components/MainWrapper';
 
 // Font configuration
 const inter = Inter({
@@ -124,15 +126,19 @@ export default function RootLayout({ children }) {
           </a>
 
           {/* Site Header */}
-          <Navbar />
+          <LayoutWrapper>
+            <Navbar />
+          </LayoutWrapper>
 
           {/* Main Content */}
-          <main id="main-content" className="min-h-screen pt-16 lg:pt-20">
+          <MainWrapper>
             {children}
-          </main>
+          </MainWrapper>
 
           {/* Site Footer */}
-          <Footer />
+          <LayoutWrapper>
+            <Footer />
+          </LayoutWrapper>
 
           {/* Toast Notifications */}
           <Toaster />
