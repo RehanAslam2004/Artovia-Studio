@@ -51,6 +51,11 @@ service cloud.firestore {
       allow update, delete: if isAdmin();
     }
     
+    // Users: Users can read/write their own data
+    match /users/{userId} {
+      allow read, write: if isAuthenticated() && request.auth.uid == userId;
+    }
+
     // Connection Test (for debugging)
     match /connection_test/{docId} {
         allow read, write: if true;
