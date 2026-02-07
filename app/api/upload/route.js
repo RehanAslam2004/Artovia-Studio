@@ -19,11 +19,14 @@ cloudinary.config({
 });
 
 export async function POST(request) {
+    console.log('Upload API: Request received');
     try {
-        const cookieStore = cookies();
+        const cookieStore = await cookies();
         const userRole = cookieStore.get('user_role')?.value;
+        console.log('Upload API: User role:', userRole);
 
         if (userRole !== 'admin') {
+            console.log('Upload API: Unauthorized');
             return NextResponse.json(
                 { success: false, error: 'Unauthorized access' },
                 { status: 401 }
@@ -35,15 +38,20 @@ export async function POST(request) {
         const folder = formData.get('folder') || 'products';
 
         if (!file) {
+            console.log('Upload API: No file provided');
             return NextResponse.json(
                 { success: false, error: 'No file provided' },
                 { status: 400 }
             );
         }
 
+        console.log(`Upload API: Processing file ${file.name} (${file.size} bytes)`);
+
         // Convert file to buffer
         const bytes = await file.arrayBuffer();
         const buffer = Buffer.from(bytes);
+
+        console.log('Upload API: Starting Cloudinary upload...');
 
         // Upload to Cloudinary
         const result = await new Promise((resolve, reject) => {
@@ -53,8 +61,13 @@ export async function POST(request) {
                     resource_type: 'auto',
                 },
                 (error, result) => {
-                    if (error) reject(error);
-                    else resolve(result);
+                    if (error) {
+                        console.error('Cloudinary API Error:', error);
+                        reject(error);
+                    } else {
+                        console.log('Cloudinary Upload Success:', result.public_id);
+                        resolve(result);
+                    }
                 }
             ).end(buffer);
         });
@@ -65,7 +78,7 @@ export async function POST(request) {
             publicId: result.public_id,
         });
     } catch (error) {
-        console.error('Upload error:', error);
+        console.error('Upload API Fatal Error:', error);
         return NextResponse.json(
             { success: false, error: error.message || 'Upload failed' },
             { status: 500 }
@@ -75,7 +88,7 @@ export async function POST(request) {
 
 export async function DELETE(request) {
     try {
-        const cookieStore = cookies();
+        const cookieStore = await cookies();
         const userRole = cookieStore.get('user_role')?.value;
 
         if (userRole !== 'admin') {

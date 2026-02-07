@@ -103,15 +103,27 @@ export default function DownloadPage() {
         return url;
     };
 
-    // Handle download click - uses server API to proxy download
+    // Handle download click
     const handleDownload = (link, index) => {
         setDownloadingIndex(index);
 
-        // Use our API to proxy the download with proper headers
-        const downloadUrl = `/api/download?url=${encodeURIComponent(link.url)}&name=${encodeURIComponent(link.name || 'download')}`;
+        // Get the optimized URL (adds fl_attachment for Cloudinary)
+        const optimizedUrl = getDownloadUrl(link.url);
 
-        // Navigate to download URL directly - browser will download the file
-        window.location.href = downloadUrl;
+        // Check if it's a Cloudinary URL (Direct Download)
+        if (optimizedUrl.includes('cloudinary.com') && optimizedUrl.includes('fl_attachment')) {
+            // Trigger direct download from Cloudinary
+            const a = document.createElement('a');
+            a.href = optimizedUrl;
+            a.download = link.name || 'download';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        } else {
+            // Use our API to proxy the download for non-Cloudinary files (or fallback)
+            const downloadUrl = `/api/download?url=${encodeURIComponent(link.url)}&name=${encodeURIComponent(link.name || 'download')}`;
+            window.location.href = downloadUrl;
+        }
 
         setTimeout(() => setDownloadingIndex(null), 1500);
     };

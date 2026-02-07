@@ -23,6 +23,7 @@ import { useCart } from '@/hooks/useCart';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/Button';
 import { cn } from '@/lib/utils';
+import { getPendingOrdersCount, getUserActionRequiredCount } from '@/lib/orders';
 
 // Navigation links - Simplified (no About)
 const navLinks = [
@@ -74,6 +75,37 @@ export default function Navbar() {
     };
 
     const cartItemCount = isLoaded ? getItemCount() : 0;
+
+    // Notification State
+    const [pendingOrdersCount, setPendingOrdersCount] = useState(0);
+    const [userActionCount, setUserActionCount] = useState(0);
+
+    useEffect(() => {
+        let isMounted = true;
+        const fetchNotifications = async () => {
+            // Admin Badge
+            if (isAdmin) {
+                const count = await getPendingOrdersCount();
+                if (isMounted) setPendingOrdersCount(count);
+            }
+
+            // User Badge
+            if (user?.uid) {
+                const count = await getUserActionRequiredCount(user.uid);
+                if (isMounted) setUserActionCount(count);
+            }
+        };
+
+        fetchNotifications();
+
+        // Poll every 1 minute or on navigation? 
+        // For now, fetch once on mount/auth change.
+        const interval = setInterval(fetchNotifications, 60000);
+        return () => {
+            isMounted = false;
+            clearInterval(interval);
+        };
+    }, [isAdmin, user]);
 
     return (
         <header
@@ -172,20 +204,41 @@ export default function Navbar() {
 
                                             <div className="py-2">
                                                 <Link
-                                                    href="/account/orders"
+                                                    href="/account"
                                                     className="flex items-center gap-2 rounded-md px-3 py-2 text-sm text-gray-600 hover:bg-pink-50"
                                                 >
-                                                    <Package className="h-4 w-4" />
-                                                    My Orders
+                                                    <User className="h-4 w-4" />
+                                                    My Profile
+                                                </Link>
+                                                <Link
+                                                    href="/account/orders"
+                                                    className="flex items-center gap-2 rounded-md px-3 py-2 text-sm text-gray-600 hover:bg-pink-50 justify-between"
+                                                >
+                                                    <div className="flex items-center gap-2">
+                                                        <Package className="h-4 w-4" />
+                                                        My Orders
+                                                    </div>
+                                                    {userActionCount > 0 && (
+                                                        <span className="flex h-5 w-5 items-center justify-center rounded-full bg-blue-500 text-[10px] font-bold text-white">
+                                                            {userActionCount}
+                                                        </span>
+                                                    )}
                                                 </Link>
 
                                                 {isAdmin && (
                                                     <Link
                                                         href="/admin/dashboard"
-                                                        className="flex items-center gap-2 rounded-md px-3 py-2 text-sm text-gray-600 hover:bg-pink-50"
+                                                        className="flex items-center gap-2 rounded-md px-3 py-2 text-sm text-gray-600 hover:bg-pink-50 justify-between"
                                                     >
-                                                        <Settings className="h-4 w-4" />
-                                                        Admin Dashboard
+                                                        <div className="flex items-center gap-2">
+                                                            <Settings className="h-4 w-4" />
+                                                            Admin Dashboard
+                                                        </div>
+                                                        {pendingOrdersCount > 0 && (
+                                                            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
+                                                                {pendingOrdersCount}
+                                                            </span>
+                                                        )}
                                                     </Link>
                                                 )}
                                             </div>
@@ -288,20 +341,42 @@ export default function Navbar() {
                                             </div>
 
                                             <Link
-                                                href="/account/orders"
+                                                href="/account"
                                                 className="flex items-center gap-3 rounded-lg px-4 py-3 text-gray-600 hover:bg-pink-50"
                                             >
-                                                <Package className="h-5 w-5" />
-                                                My Orders
+                                                <User className="h-5 w-5" />
+                                                My Profile
+                                            </Link>
+
+                                            <Link
+                                                href="/account/orders"
+                                                className="flex items-center gap-3 rounded-lg px-4 py-3 text-gray-600 hover:bg-pink-50 justify-between"
+                                            >
+                                                <div className="flex items-center gap-3">
+                                                    <Package className="h-5 w-5" />
+                                                    My Orders
+                                                </div>
+                                                {userActionCount > 0 && (
+                                                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-blue-500 text-[10px] font-bold text-white">
+                                                        {userActionCount}
+                                                    </span>
+                                                )}
                                             </Link>
 
                                             {isAdmin && (
                                                 <Link
                                                     href="/admin/dashboard"
-                                                    className="flex items-center gap-3 rounded-lg px-4 py-3 text-gray-600 hover:bg-pink-50"
+                                                    className="flex items-center gap-3 rounded-lg px-4 py-3 text-gray-600 hover:bg-pink-50 justify-between"
                                                 >
-                                                    <Settings className="h-5 w-5" />
-                                                    Admin Dashboard
+                                                    <div className="flex items-center gap-3">
+                                                        <Settings className="h-5 w-5" />
+                                                        Admin Dashboard
+                                                    </div>
+                                                    {pendingOrdersCount > 0 && (
+                                                        <span className="flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
+                                                            {pendingOrdersCount}
+                                                        </span>
+                                                    )}
                                                 </Link>
                                             )}
 

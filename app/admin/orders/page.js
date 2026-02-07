@@ -22,7 +22,10 @@ import {
     Link as LinkIcon,
     Plus,
     Trash2,
-    CreditCard
+    CreditCard,
+    Calendar,
+    RefreshCw,
+    Loader2
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -39,6 +42,7 @@ import {
     approveOrder,
     cancelOrder
 } from '@/lib/orders';
+import { getProductById } from '@/lib/products';
 import {
     formatPrice,
     formatDate,
@@ -66,6 +70,8 @@ export default function AdminOrdersPage() {
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     const [statusFilter, setStatusFilter] = useState('');
+    const [paymentFilter, setPaymentFilter] = useState('');
+    const [dateRange, setDateRange] = useState({ start: '', end: '' });
     const [expandedOrder, setExpandedOrder] = useState(null);
 
     // Approval modal state
@@ -120,9 +126,10 @@ export default function AdminOrdersPage() {
             result = result.filter(
                 order =>
                     order.id.toLowerCase().includes(query) ||
-                    order.userEmail?.toLowerCase().includes(query) ||
-                    order.userName?.toLowerCase().includes(query) ||
-                    order.userPhone?.includes(query)
+                    (order.userEmail && order.userEmail.toLowerCase().includes(query)) ||
+                    (order.userName && order.userName.toLowerCase().includes(query)) ||
+                    (order.userPhone && order.userPhone.includes(query)) ||
+                    (order.transactionId && order.transactionId.toLowerCase().includes(query))
             );
         }
 
@@ -131,12 +138,38 @@ export default function AdminOrdersPage() {
             result = result.filter(order => order.status === statusFilter);
         }
 
+        // Filter by payment method
+        if (paymentFilter) {
+            result = result.filter(order => order.paymentMethod === paymentFilter);
+        }
+
+        // Filter by date range
+        if (dateRange.start) {
+            const startDate = new Date(dateRange.start);
+            startDate.setHours(0, 0, 0, 0);
+            result = result.filter(order => new Date(order.createdAt) >= startDate);
+        }
+
+        if (dateRange.end) {
+            const endDate = new Date(dateRange.end);
+            endDate.setHours(23, 59, 59, 999);
+            result = result.filter(order => new Date(order.createdAt) <= endDate);
+        }
+
         setFilteredOrders(result);
-    }, [orders, searchQuery, statusFilter]);
+    }, [orders, searchQuery, statusFilter, paymentFilter, dateRange]);
 
     // Handle search
     const handleSearch = (e) => {
         setSearchQuery(e.target.value);
+    };
+
+    // Handle Reset Filters
+    const resetFilters = () => {
+        setSearchQuery('');
+        setStatusFilter('');
+        setPaymentFilter('');
+        setDateRange({ start: '', end: '' });
     };
 
     // Open approval modal
@@ -287,18 +320,72 @@ export default function AdminOrdersPage() {
                 {/* Header */}
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <h1 className="text-2xl font-bold text-white">Orders</h1>
+                </div>
 
-                    {/* Search and Filter */}
-                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-                        <div className="relative">
+                {/* Filters Section */}
+                <div className="bg-gray-900/50 p-4 rounded-xl border border-gray-800 space-y-4">
+                    <div className="flex flex-col lg:flex-row gap-4">
+                        {/* Search */}
+                        <div className="relative flex-1">
                             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
                             <Input
-                                placeholder="Search orders..."
+                                placeholder="Search by ID, Email, Name, or Transaction..."
                                 value={searchQuery}
                                 onChange={handleSearch}
-                                className="pl-9 bg-gray-900 border-gray-800 text-white w-full sm:w-64"
+                                className="pl-9 bg-gray-900 border-gray-700 text-white w-full"
                             />
                         </div>
+
+                        {/* Payment Method */}
+                        <div className="w-full lg:w-48">
+                            <div className="relative">
+                                <CreditCard className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
+                                <select
+                                    value={paymentFilter}
+                                    onChange={(e) => setPaymentFilter(e.target.value)}
+                                    className="w-full pl-9 pr-4 py-2 bg-gray-900 border border-gray-700 rounded-md text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 appearance-none"
+                                >
+                                    <option value="">All Payments</option>
+                                    <option value="jazzcash">JazzCash</option>
+                                    <option value="easypaisa">EasyPaisa</option>
+                                    <option value="bank_transfer">Bank Transfer</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        {/* Date Range */}
+                        <div className="flex gap-2 w-full lg:w-auto">
+                            <div className="relative flex-1 lg:w-40">
+                                <Calendar className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
+                                <input
+                                    type="date"
+                                    value={dateRange.start}
+                                    onChange={(e) => setDateRange(prev => ({ ...prev, start: e.target.value }))}
+                                    className="w-full pl-9 pr-2 py-2 bg-gray-900 border border-gray-700 rounded-md text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                    placeholder="Start Date"
+                                />
+                            </div>
+                            <div className="relative flex-1 lg:w-40">
+                                <Calendar className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
+                                <input
+                                    type="date"
+                                    value={dateRange.end}
+                                    onChange={(e) => setDateRange(prev => ({ ...prev, end: e.target.value }))}
+                                    className="w-full pl-9 pr-2 py-2 bg-gray-900 border border-gray-700 rounded-md text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                    placeholder="End Date"
+                                />
+                            </div>
+                        </div>
+
+                        {/* Reset Button */}
+                        <Button
+                            variant="outline"
+                            onClick={resetFilters}
+                            className="border-gray-700 text-gray-400 hover:text-white hover:bg-gray-800"
+                            title="Reset Filters"
+                        >
+                            <RefreshCw className="h-4 w-4" />
+                        </Button>
                     </div>
                 </div>
 
@@ -538,7 +625,7 @@ export default function AdminOrdersPage() {
                                 <div>
                                     <Label className="text-gray-300 mb-2 block">Delivery Items</Label>
                                     <div className="space-y-4">
-                                        {downloadLinks.map((link, index) => (
+                                        {Array.isArray(downloadLinks) && downloadLinks.map((link, index) => (
                                             <div key={index} className="bg-gray-800/50 p-3 rounded-lg border border-gray-800 space-y-3">
                                                 <div className="flex justify-between items-center">
                                                     <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Item {index + 1}</span>
@@ -549,45 +636,96 @@ export default function AdminOrdersPage() {
                                                     )}
                                                 </div>
 
-                                                <Input
-                                                    placeholder="Item Name (e.g. Wedding Invitation)"
-                                                    value={link.name}
-                                                    onChange={(e) => updateDownloadLink(index, 'name', e.target.value)}
-                                                    className="bg-gray-800 border-gray-700 text-white"
-                                                />
-
-                                                {/* Type Selector */}
-                                                <div className="flex gap-2">
-                                                    <button
-                                                        onClick={() => updateDownloadLink(index, 'type', 'link')}
-                                                        className={`flex-1 py-1.5 text-xs font-medium rounded-md transition-colors ${link.type === 'link'
-                                                            ? 'bg-purple-600 text-white'
-                                                            : 'bg-gray-800 text-gray-400 border border-gray-700 hover:bg-gray-700'
-                                                            }`}
-                                                    >
-                                                        Link
-                                                    </button>
-                                                    <button
-                                                        onClick={() => updateDownloadLink(index, 'type', 'file')}
-                                                        className={`flex-1 py-1.5 text-xs font-medium rounded-md transition-colors ${link.type === 'file'
-                                                            ? 'bg-blue-600 text-white'
-                                                            : 'bg-gray-800 text-gray-400 border border-gray-700 hover:bg-gray-700'
-                                                            }`}
-                                                    >
-                                                        File Upload
-                                                    </button>
-                                                </div>
-
-                                                {/* Input based on Type */}
-                                                {link.type === 'link' ? (
+                                                {/* Download Link Management */}
+                                                <div className="space-y-2">
+                                                    {/* Name Input */}
                                                     <Input
-                                                        placeholder="https://..."
-                                                        value={link.url}
-                                                        onChange={(e) => updateDownloadLink(index, 'url', e.target.value)}
+                                                        placeholder="Item Name (e.g. Wedding Invitation)"
+                                                        value={link.name}
+                                                        onChange={(e) => updateDownloadLink(index, 'name', e.target.value)}
                                                         className="bg-gray-800 border-gray-700 text-white"
                                                     />
-                                                ) : (
-                                                    <div className="flex gap-2 items-center">
+
+                                                    {/* URL Input */}
+                                                    <div className="relative">
+                                                        <LinkIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
+                                                        <Input
+                                                            placeholder="https://..."
+                                                            value={link.url}
+                                                            onChange={(e) => updateDownloadLink(index, 'url', e.target.value)}
+                                                            className="pl-9 bg-gray-800 border-gray-700 text-white w-full pr-10"
+                                                        />
+                                                        {link.url && (
+                                                            <a
+                                                                href={link.url}
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
+                                                                className="absolute right-2 top-1/2 -translate-y-1/2 text-purple-400 hover:text-purple-300"
+                                                                title="Test Link"
+                                                            >
+                                                                <Eye className="h-4 w-4" />
+                                                            </a>
+                                                        )}
+                                                    </div>
+
+                                                    {/* Action Toolbar */}
+                                                    <div className="flex gap-2">
+                                                        {/* 1. Auto-Generate Button */}
+                                                        <Button
+                                                            type="button"
+                                                            onClick={async () => {
+                                                                try {
+                                                                    const itemData = approvalOrder.items?.[index];
+                                                                    if (!itemData) {
+                                                                        toast.error({ title: "Item data missing" });
+                                                                        return;
+                                                                    }
+                                                                    const productId = itemData.productId || itemData.id;
+
+                                                                    // 1. Snapshot
+                                                                    if (itemData.downloadUrl || itemData.canvaLink) {
+                                                                        const snapshotLink = itemData.downloadUrl || itemData.canvaLink;
+                                                                        updateDownloadLink(index, 'url', snapshotLink);
+                                                                        updateDownloadLink(index, 'type', (snapshotLink.includes('cloudinary') ? 'file' : 'link'));
+                                                                        toast.success({ title: "Restored from order!" });
+                                                                        return;
+                                                                    }
+
+                                                                    // 2. Fetch
+                                                                    if (productId) {
+                                                                        setIsUploading(true);
+                                                                        try {
+                                                                            const result = await getProductById(productId);
+                                                                            if (result.success && result.product) {
+                                                                                const p = result.product;
+                                                                                // Fallback: downloadUrl -> canvaLink -> Cloudinary Image
+                                                                                const fetchedLink = p.downloadUrl || p.canvaLink || (p.imageUrl?.includes('cloudinary') ? p.imageUrl : null);
+
+                                                                                if (fetchedLink) {
+                                                                                    updateDownloadLink(index, 'url', fetchedLink);
+                                                                                    updateDownloadLink(index, 'type', (fetchedLink.includes('cloudinary') ? 'file' : 'link'));
+                                                                                    toast.success({ title: "Fetched from product!" });
+                                                                                } else {
+                                                                                    toast.error({ title: "No link/file found in product." });
+                                                                                }
+                                                                            } else {
+                                                                                toast.error({ title: "Product fetch failed." });
+                                                                            }
+                                                                        } catch (e) { toast.error({ title: "Connection error" }); }
+                                                                        finally { setIsUploading(false); }
+                                                                    } else {
+                                                                        toast.error({ title: "Product ID missing" });
+                                                                    }
+                                                                } catch (err) { toast.error({ title: "Error" }); }
+                                                            }}
+                                                            disabled={isUploading}
+                                                            className="flex-1 bg-gradient-to-r from-pink-600 to-purple-600 border-0 hover:from-pink-700 hover:to-purple-700 h-9 text-xs"
+                                                        >
+                                                            {isUploading ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <RefreshCw className="h-3 w-3 mr-1" />}
+                                                            Auto-Generate
+                                                        </Button>
+
+                                                        {/* 2. Upload Button */}
                                                         <div className="relative flex-1">
                                                             <input
                                                                 type="file"
@@ -597,42 +735,21 @@ export default function AdminOrdersPage() {
                                                             />
                                                             <label
                                                                 htmlFor={`file-upload-${index}`}
-                                                                className={`flex items-center justify-center w-full px-4 py-2 text-sm font-medium text-white transition-colors border rounded-md cursor-pointer ${link.url
-                                                                    ? 'bg-gray-800 border-green-500/50 text-green-400 hover:bg-gray-700'
-                                                                    : 'bg-gray-800 border-gray-700 hover:bg-gray-700 hover:border-gray-600'
+                                                                className={`flex items-center justify-center w-full h-9 px-3 text-xs font-medium text-white transition-colors border rounded-md cursor-pointer ${isUploading
+                                                                    ? 'bg-gray-800 border-gray-700 cursor-not-allowed'
+                                                                    : 'bg-gray-800 border-gray-600 hover:bg-gray-700'
                                                                     }`}
                                                             >
                                                                 {isUploading ? (
-                                                                    <span className="flex items-center">
-                                                                        <Loader size="sm" className="mr-2" />
-                                                                        Uploading...
-                                                                    </span>
-                                                                ) : link.url ? (
-                                                                    <span className="flex items-center">
-                                                                        <Check className="w-4 h-4 mr-2" />
-                                                                        File Uploaded
-                                                                    </span>
+                                                                    <Loader2 className="h-3 w-3 animate-spin mr-1" />
                                                                 ) : (
-                                                                    <span className="flex items-center">
-                                                                        <Download className="w-4 h-4 mr-2" />
-                                                                        Choose File to Upload
-                                                                    </span>
+                                                                    <Download className="h-3 w-3 mr-1" />
                                                                 )}
+                                                                Upload New File
                                                             </label>
                                                         </div>
-                                                        {link.url && (
-                                                            <a
-                                                                href={link.url}
-                                                                target="_blank"
-                                                                rel="noopener noreferrer"
-                                                                className="p-2 text-gray-400 hover:text-white bg-gray-800 rounded-md border border-gray-700 hover:border-gray-600 transition-colors"
-                                                                title="View File"
-                                                            >
-                                                                <Eye className="w-4 h-4" />
-                                                            </a>
-                                                        )}
                                                     </div>
-                                                )}
+                                                </div>
                                             </div>
                                         ))}
                                     </div>

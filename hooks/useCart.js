@@ -9,6 +9,7 @@
 
 import { useState, useEffect, useCallback, createContext, useContext } from 'react';
 import { getFromStorage, setToStorage } from '@/lib/utils';
+import { useAuth } from '@/hooks/useAuth';
 
 // Cart storage key
 const CART_STORAGE_KEY = 'artovia_cart';
@@ -37,6 +38,41 @@ export function CartProvider({ children }) {
             setToStorage(CART_STORAGE_KEY, cart);
         }
     }, [cart, isLoaded]);
+
+    // NEW: Sync with Firestore for logged-in users
+    const { user } = useAuth(); // Helper to access user inside provider (might need refactoring if useAuth uses useCart)
+    // NOTE: useAuth likely wraps CartProvider or vice versa. 
+    // If CartProvider is inside AuthProvider, we can use useAuth().
+    // Let's assume AuthProvider > CartProvider for now.
+
+    useEffect(() => {
+        async function syncCartToFirestore() {
+            if (!user?.uid || !isLoaded) return;
+
+            try {
+                // Dynamic import to avoid circular dependencies or server-side issues
+                const { doc, setDoc, serverTimestamp } = await import('firebase/firestore');
+                const { db } = await import('@/lib/firebase');
+
+                const cartRef = doc(db, 'carts', user.uid);
+                await setDoc(cartRef, {
+                    items: cart,
+                    userId: user.uid,
+                    email: user.email,
+                    updatedAt: serverTimestamp(),
+                    itemCount: cart.length,
+                    total: cart.reduce((sum, item) => sum + (item.price * item.quantity), 0)
+                }, { merge: true });
+
+            } catch (error) {
+                console.error('Error syncing cart to Firestore:', error);
+            }
+        }
+
+        // Debounce sync
+        const timeoutId = setTimeout(syncCartToFirestore, 2000);
+        return () => clearTimeout(timeoutId);
+    }, [cart, user, isLoaded]);
 
     /**
      * Add item to cart

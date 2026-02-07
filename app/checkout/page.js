@@ -7,8 +7,9 @@
  * Email-based order confirmation - no WhatsApp.
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import ExitIntentPopup from '@/components/ExitIntentPopup';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import {
@@ -159,7 +160,15 @@ export default function CheckoutPage() {
                 notes: formData.notes || null,
             };
 
-            const result = await createOrder(orderData);
+            // Race against a timeout to give better feedback
+            const timeoutPromise = new Promise((_, reject) => {
+                setTimeout(() => reject(new Error('Connection timed out. Please check your internet.')), 15000);
+            });
+
+            const result = await Promise.race([
+                createOrder(orderData),
+                timeoutPromise
+            ]);
 
             if (result.success) {
                 setOrderId(result.order.id);
@@ -171,7 +180,16 @@ export default function CheckoutPage() {
             }
         } catch (error) {
             console.error('Checkout error:', error);
-            toast.error({ title: 'Failed to place order', description: error.message });
+
+            // Check for specific Firestore connectivity errors
+            if (error.message.includes('offline') || error.message.includes('backend') || error.message.includes('timed out')) {
+                toast.error({
+                    title: 'Connection Error',
+                    description: 'Could not connect to the server. Please check your internet and try again.'
+                });
+            } else {
+                toast.error({ title: 'Failed to place order', description: error.message });
+            }
         } finally {
             setIsSubmitting(false);
         }
@@ -307,8 +325,48 @@ export default function CheckoutPage() {
         );
     }
 
+    // Load Firestore for guest sync
+    const syncGuestCart = async (email) => {
+        if (!email || !isLoaded || cart.length === 0) return;
+
+        try {
+            const { doc, setDoc, serverTimestamp } = await import('firebase/firestore');
+            const { db } = await import('@/lib/firebase');
+
+            // Use email as ID (sanitized) or just email
+            // Storing in a separate collection 'guest_carts' or 'carts'
+            // Let's use 'carts' with a prefix to keep it simple, or 'carts' implies users.
+            // Let's use 'guest_carts' to differentiate.
+            await setDoc(doc(db, 'guest_carts', email), {
+                email,
+                items: cart,
+                updatedAt: serverTimestamp(),
+                itemCount: cart.length,
+                total: getTotal(),
+                recovered: false
+            }, { merge: true });
+
+        } catch (error) {
+            console.error('Error syncing guest cart:', error);
+        }
+    };
+
+    // Debounce email sync (Temporarily disabled for debugging)
+    /*
+    useEffect(() => {
+        if (!user && isValidEmail(formData.email)) {
+            const timer = setTimeout(() => {
+                syncGuestCart(formData.email);
+            }, 2000);
+            return () => clearTimeout(timer);
+        }
+    }, [formData.email, cart, user]);
+    */
+
     return (
         <div className="min-h-screen bg-pink-50/30">
+            <ExitIntentPopup />
+
             {/* Page Header */}
             <div className="border-b border-pink-100 bg-white">
                 <div className="container mx-auto px-4 py-6 sm:px-6 lg:px-8">
