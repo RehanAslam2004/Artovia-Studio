@@ -23,7 +23,9 @@ import {
 import { Button } from '@/components/ui/Button';
 import { getOrderById } from '@/lib/orders';
 
-export default function DownloadPage() {
+import { Suspense } from 'react';
+
+function DownloadContent() {
     const params = useParams();
     const searchParams = useSearchParams();
     const orderId = params.orderId;
@@ -300,5 +302,17 @@ export default function DownloadPage() {
                 </motion.div>
             </div>
         </div>
+    );
+}
+
+export default function DownloadPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen flex items-center justify-center">
+                <Loader2 className="h-12 w-12 animate-spin text-pink-500" />
+            </div>
+        }>
+            <DownloadContent />
+        </Suspense>
     );
 }

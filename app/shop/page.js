@@ -45,7 +45,10 @@ const defaultCategories = [
     { id: 'business', name: 'Business' },
 ];
 
-export default function ShopPage() {
+import { Suspense } from 'react';
+import Loader from '@/components/Loader';
+
+function ShopContent() {
     const searchParams = useSearchParams();
 
     // State
@@ -407,5 +410,17 @@ export default function ShopPage() {
                 </div>
             </div>
         </div>
+    );
+}
+
+export default function ShopPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen flex items-center justify-center">
+                <Loader size="lg" />
+            </div>
+        }>
+            <ShopContent />
+        </Suspense>
     );
 }
