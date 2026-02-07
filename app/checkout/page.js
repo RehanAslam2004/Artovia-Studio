@@ -96,6 +96,38 @@ export default function CheckoutPage() {
     const [orderId, setOrderId] = useState(null);
     const [copiedField, setCopiedField] = useState(null);
 
+    // Load Firestore for guest sync
+    const syncGuestCart = async (email) => {
+        if (!email || !isLoaded || cart.length === 0) return;
+
+        try {
+            const { doc, setDoc, serverTimestamp } = await import('firebase/firestore');
+            const { db } = await import('@/lib/firebase');
+
+            await setDoc(doc(db, 'guest_carts', email), {
+                email,
+                items: cart,
+                updatedAt: serverTimestamp(),
+                itemCount: cart.length,
+                total: getTotal(),
+                recovered: false
+            }, { merge: true });
+
+        } catch (error) {
+            console.error('Error syncing guest cart:', error);
+        }
+    };
+
+    // Debounce email sync
+    useEffect(() => {
+        if (!user && isValidEmail(formData.email)) {
+            const timer = setTimeout(() => {
+                syncGuestCart(formData.email);
+            }, 2000);
+            return () => clearTimeout(timer);
+        }
+    }, [formData.email, cart, user]);
+
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
@@ -325,41 +357,7 @@ export default function CheckoutPage() {
         );
     }
 
-    // Load Firestore for guest sync
-    const syncGuestCart = async (email) => {
-        if (!email || !isLoaded || cart.length === 0) return;
 
-        try {
-            const { doc, setDoc, serverTimestamp } = await import('firebase/firestore');
-            const { db } = await import('@/lib/firebase');
-
-            // Use email as ID (sanitized) or just email
-            // Storing in a separate collection 'guest_carts' or 'carts'
-            // Let's use 'carts' with a prefix to keep it simple, or 'carts' implies users.
-            // Let's use 'guest_carts' to differentiate.
-            await setDoc(doc(db, 'guest_carts', email), {
-                email,
-                items: cart,
-                updatedAt: serverTimestamp(),
-                itemCount: cart.length,
-                total: getTotal(),
-                recovered: false
-            }, { merge: true });
-
-        } catch (error) {
-            console.error('Error syncing guest cart:', error);
-        }
-    };
-
-    // Debounce email sync
-    useEffect(() => {
-        if (!user && isValidEmail(formData.email)) {
-            const timer = setTimeout(() => {
-                syncGuestCart(formData.email);
-            }, 2000);
-            return () => clearTimeout(timer);
-        }
-    }, [formData.email, cart, user]);
 
     return (
         <div className="min-h-screen bg-pink-50/30">
