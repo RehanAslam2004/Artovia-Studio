@@ -351,8 +351,7 @@ export default function CheckoutPage() {
         }
     };
 
-    // Debounce email sync (Temporarily disabled for debugging)
-    /*
+    // Debounce email sync
     useEffect(() => {
         if (!user && isValidEmail(formData.email)) {
             const timer = setTimeout(() => {
@@ -361,7 +360,6 @@ export default function CheckoutPage() {
             return () => clearTimeout(timer);
         }
     }, [formData.email, cart, user]);
-    */
 
     return (
         <div className="min-h-screen bg-pink-50/30">

@@ -1,0 +1,12 @@
+Route Audit Results:
+====================
+[PASS] http://localhost:3000/ - Status: 200 (1017ms)
+[PASS] http://localhost:3000/shop - Status: 200 (139ms)
+[FAIL] http://localhost:3000/about - Status: 404
+[PASS] http://localhost:3000/contact - Status: 200 (108ms)
+[PASS] http://localhost:3000/login - Status: 200 (171ms)
+[PASS] http://localhost:3000/register - Status: 200 (142ms)
+[PASS] http://localhost:3000/cart - Status: 200 (100ms)
+[PASS] http://localhost:3000/checkout - Status: 200 (111ms)
+
+Some routes failed.

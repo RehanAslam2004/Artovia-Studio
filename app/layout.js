@@ -114,7 +114,7 @@ export const viewport = {
  */
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className={`${inter.variable} ${playfair.variable} ${cinzel.variable}`} suppressHydrationWarning>
+    <html lang="en" className={`${inter.variable} ${playfair.variable} ${cinzel.variable}`} suppressHydrationWarning style={{ scrollBehavior: 'smooth' }}>
       <body className="min-h-screen bg-white font-sans antialiased dark:bg-gray-950">
         <ClientProviders>
           {/* Skip to content link for accessibility */}

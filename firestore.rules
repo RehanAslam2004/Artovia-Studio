@@ -1,0 +1,59 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+        (request.auth.token.email.matches('.*@artoviastudio[.]com') || 
+         request.auth.token.email == 'admin@example.com' ||
+         // Add your specific admin email here if different
+         request.auth.token.email == 'artovia.business@gmail.com'); 
+    }
+
+    // Products: Public read, Admin write
+    match /products/{productId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Orders: 
+    // - Create: Public (for guest checkout)
+    // - Read: Own orders or Admin
+    // - Update: Admin only (for status updates)
+    match /orders/{orderId} {
+      allow create: if true;
+      allow read: if isAdmin() || (isAuthenticated() && resource.data.userId == request.auth.uid);
+      
+      // Allow guests to read their own order via a special query if needed, 
+      // but usually we rely on the backend or email for that. 
+      // For now, let's keep it simple for authenticated users.
+
+      allow update: if isAdmin();
+    }
+
+    // Guest Carts: Public read/write (needed for the sync feature)
+    // Warning: This is permissive, but needed for the feature to work without auth.
+    // Ideally, we'd use anonymous auth, but for now we'll scope it by email/ID.
+    match /guest_carts/{cartId} {
+      allow read, write: if true; 
+    }
+    
+    // Reviews: Public read, Authenticated write
+    match /reviews/{reviewId} {
+      allow read: if true;
+      allow create: if true; // Allow guests to review? Or strictly auth? Let's say true for now.
+      allow update, delete: if isAdmin();
+    }
+    
+    // Connection Test (for debugging)
+    match /connection_test/{docId} {
+        allow read, write: if true;
+    }
+  }
+}
