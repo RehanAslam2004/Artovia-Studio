@@ -143,7 +143,7 @@ export default function ProductDetails({ product, relatedProducts, initialReview
 
                             {/* Image Thumbnails (if multiple images) */}
                             {product.images && product.images.length > 1 && (
-                                <div className="mt-4 flex gap-3">
+                                <div className="mt-4 flex gap-3 overflow-x-auto pb-2 scrollbar-none snap-x">
                                     {product.images.map((img, index) => (
                                         <button
                                             key={index}

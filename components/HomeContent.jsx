@@ -23,10 +23,11 @@ const categories = [
         color: 'from-pink-400 to-rose-400',
     },
     {
-        id: 'templates',
-        name: 'Templates',
-        description: 'Ready-to-use design templates',
+        id: 'custom-request',
+        name: 'Custom Request',
+        description: 'Get a design tailored just for you',
         color: 'from-pink-500 to-fuchsia-400',
+        href: '/custom-request', // Direct link
     },
     {
         id: 'digital-art',
@@ -86,7 +87,7 @@ export default function HomeContent({ featuredProducts }) {
     return (
         <div className="overflow-hidden">
             {/* Hero Section - Centered */}
-            <section className="relative min-h-[75vh] flex items-center justify-center hero-pattern overflow-hidden">
+            <section className="relative min-h-[60vh] sm:min-h-[75vh] flex items-center justify-center hero-pattern overflow-hidden">
                 {/* Animated Background Decorations */}
                 <div className="absolute inset-0 pointer-events-none">
                     <motion.div
@@ -147,7 +148,7 @@ export default function HomeContent({ featuredProducts }) {
 
                         <motion.h1
                             variants={fadeInUp}
-                            className="mt-8 text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl lg:text-7xl font-logo"
+                            className="mt-6 sm:mt-8 text-3xl font-bold tracking-tight text-gray-900 sm:text-5xl lg:text-7xl font-logo"
                         >
                             Beautiful Designs for<br />
                             <span className="block mt-2 font-decorative text-pink-500 drop-shadow-sm">
@@ -173,9 +174,9 @@ export default function HomeContent({ featuredProducts }) {
                                     <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
                                 </Button>
                             </Link>
-                            <Link href="/shop?category=wedding-cards">
+                            <Link href="/custom-request">
                                 <Button size="lg" variant="outline" className="h-12 min-w-[180px] text-base border-pink-200 text-pink-600 hover:bg-pink-50 rounded-full">
-                                    View Wedding Cards
+                                    Custom Design Request
                                 </Button>
                             </Link>
                         </motion.div>
@@ -206,11 +207,11 @@ export default function HomeContent({ featuredProducts }) {
                         whileInView="visible"
                         viewport={{ once: true }}
                         variants={staggerContainer}
-                        className="grid grid-cols-2 gap-4 sm:gap-8 lg:grid-cols-4"
+                        className="grid grid-cols-2 gap-3 sm:gap-8 lg:grid-cols-4"
                     >
                         {categories.map((category) => (
                             <motion.div key={category.id} variants={fadeInUp}>
-                                <Link href={`/shop?category=${category.id}`}>
+                                <Link href={category.href || `/shop?category=${category.id}`}>
                                     <motion.div
                                         whileHover={{ scale: 1.05, y: -5 }}
                                         whileTap={{ scale: 0.98 }}
@@ -272,7 +273,7 @@ export default function HomeContent({ featuredProducts }) {
                     </motion.div>
 
                     {featuredProducts && featuredProducts.length > 0 ? (
-                        <div className="grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-3 xl:grid-cols-4">
+                        <div className="grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-3 xl:grid-cols-4">
                             {featuredProducts.map((product) => (
                                 <ProductCard key={product.id} product={product} />
                             ))}

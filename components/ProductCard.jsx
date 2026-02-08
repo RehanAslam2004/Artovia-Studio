@@ -42,9 +42,9 @@ export default function ProductCard({ product, className }) {
     const inCart = isInCart(product.id);
 
     // Placeholder image if product image fails to load
-    const productImage = imageError || !product.imageUrl
+    const productImage = imageError || !(product.imageUrl || product.images?.[0])
         ? '/images/placeholder-product.png'
-        : product.imageUrl;
+        : (product.imageUrl || product.images?.[0]);
 
     return (
         <motion.div
@@ -147,7 +147,7 @@ export default function ProductCard({ product, className }) {
                             variant={inCart ? 'success' : 'outline'}
                             size="sm"
                             className={cn(
-                                "lg:hidden text-xs px-3 py-1 h-7 rounded-full",
+                                "lg:hidden text-xs px-3 py-1 h-8 rounded-full",
                                 !inCart && "border-pink-300 text-pink-500 hover:bg-pink-50"
                             )}
                             onClick={handleAddToCart}
@@ -178,9 +178,9 @@ export function ProductCardHorizontal({ product, className }) {
     };
 
     const inCart = isInCart(product.id);
-    const productImage = imageError || !product.imageUrl
+    const productImage = imageError || !(product.imageUrl || product.images?.[0])
         ? '/images/placeholder-product.png'
-        : product.imageUrl;
+        : (product.imageUrl || product.images?.[0]);
 
     return (
         <div

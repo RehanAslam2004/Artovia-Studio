@@ -45,7 +45,7 @@ import { formatPrice, debounce, cn } from '@/lib/utils';
 // Categories for dropdown
 const categories = [
     'wedding-cards',
-    'templates',
+    'bundles',
     'digital-art',
     'social-media',
     'invitations',
@@ -60,6 +60,7 @@ const initialFormState = {
     price: '',
     category: 'wedding-cards',
     imageUrl: '',
+    images: [], // Multiple images support
     featured: false,
     specifications: {},
 };
@@ -167,6 +168,7 @@ export default function AdminProductsPage() {
             price: product.price?.toString() || '',
             category: product.category || 'canva-templates',
             imageUrl: product.imageUrl || '',
+            images: product.images || (product.imageUrl ? [product.imageUrl] : []),
             canvaLink: product.canvaLink || '',
             featured: product.featured || false,
             specifications: product.specifications || {},
@@ -198,50 +200,76 @@ export default function AdminProductsPage() {
 
     // Handle image upload
     const handleImageUpload = async (e) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
-
-        // Validate file type
-        const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
-        if (!validTypes.includes(file.type)) {
-            toast.error({ title: 'Invalid file type. Please upload an image.' });
-            return;
-        }
-
-        // Validate file size (max 5MB)
-        if (file.size > 5 * 1024 * 1024) {
-            toast.error({ title: 'File too large. Maximum size is 5MB.' });
-            return;
-        }
+        const files = Array.from(e.target.files || []);
+        if (files.length === 0) return;
 
         setUploadingImage(true);
 
         try {
-            const result = await uploadFile(file, 'products');
-            if (result.success) {
-                setFormData(prev => ({ ...prev, imageUrl: result.url }));
-                toast.success({ title: 'Image uploaded successfully!' });
-            } else {
-                throw new Error(result.error);
+            const newImages = [];
+
+            for (const file of files) {
+                // Validate file type
+                const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+                if (!validTypes.includes(file.type)) {
+                    toast.error({ title: `Skipped invalid file: ${file.name}` });
+                    continue;
+                }
+
+                // Validate file size (max 5MB)
+                if (file.size > 5 * 1024 * 1024) {
+                    toast.error({ title: `Skipped large file: ${file.name}` });
+                    continue;
+                }
+
+                const result = await uploadFile(file, 'products');
+                if (result.success) {
+                    newImages.push(result.url);
+                }
+            }
+
+            if (newImages.length > 0) {
+                setFormData(prev => {
+                    const updatedImages = [...(prev.images || []), ...newImages];
+                    return {
+                        ...prev,
+                        images: updatedImages,
+                        imageUrl: updatedImages[0] // Primary image is first one
+                    };
+                });
+                toast.success({ title: `${newImages.length} image(s) uploaded!` });
             }
         } catch (error) {
             console.error('Upload error:', error);
-            toast.error({ title: 'Failed to upload image' });
+            toast.error({ title: 'Failed to upload images' });
         } finally {
             setUploadingImage(false);
+            // Reset input
+            if (fileInputRef.current) fileInputRef.current.value = '';
         }
     };
 
-    // Remove image
-    const handleRemoveImage = async () => {
-        if (formData.imageUrl) {
-            try {
-                await deleteFile(formData.imageUrl);
-            } catch (error) {
-                console.error('Error deleting image:', error);
-            }
+    // Remove specific image
+    const handleRemoveImage = async (indexToRemove) => {
+        const imageToRemove = formData.images[indexToRemove];
+
+        // Optimistically update UI
+        const updatedImages = formData.images.filter((_, index) => index !== indexToRemove);
+        setFormData(prev => ({
+            ...prev,
+            images: updatedImages,
+            imageUrl: updatedImages.length > 0 ? updatedImages[0] : ''
+        }));
+
+        // Try to delete from storage (optional, maybe keep it safe?)
+        // For now, let's just remove from product reference
+        /*
+        try {
+            await deleteFile(imageToRemove);
+        } catch (error) {
+            console.error('Error deleting image file:', error);
         }
-        setFormData(prev => ({ ...prev, imageUrl: '' }));
+        */
     };
 
     // Validate form
@@ -269,7 +297,8 @@ export default function AdminProductsPage() {
                 description: formData.description.trim(),
                 price: parseFloat(formData.price),
                 category: formData.category,
-                imageUrl: formData.imageUrl,
+                imageUrl: formData.imageUrl, // Kept for backward compatibility
+                images: formData.images, // New array
                 canvaLink: formData.canvaLink,
                 featured: formData.featured,
                 specifications: formData.specifications,
@@ -509,45 +538,59 @@ export default function AdminProductsPage() {
                             <form onSubmit={handleSubmit} className="p-4 space-y-4">
                                 {/* Image Upload */}
                                 <div>
-                                    <Label className="text-gray-300">Product Image</Label>
-                                    <div className="mt-2">
-                                        {formData.imageUrl ? (
-                                            <div className="relative aspect-video rounded-lg overflow-hidden bg-gray-800">
-                                                <Image
-                                                    src={formData.imageUrl}
-                                                    alt="Product"
-                                                    fill
-                                                    className="object-cover"
-                                                />
-                                                <button
-                                                    type="button"
-                                                    onClick={handleRemoveImage}
-                                                    className="absolute right-2 top-2 rounded-full bg-red-600 p-1 text-white"
-                                                >
-                                                    <X className="h-4 w-4" />
-                                                </button>
-                                            </div>
-                                        ) : (
-                                            <button
-                                                type="button"
-                                                onClick={() => fileInputRef.current?.click()}
-                                                disabled={uploadingImage}
-                                                className="flex aspect-video w-full items-center justify-center rounded-lg border-2 border-dashed border-gray-700 bg-gray-800 text-gray-400 hover:border-purple-500 hover:text-purple-400 transition-colors"
-                                            >
-                                                {uploadingImage ? (
-                                                    <Loader2 className="h-8 w-8 animate-spin" />
-                                                ) : (
-                                                    <div className="text-center">
-                                                        <Upload className="mx-auto h-8 w-8 mb-2" />
-                                                        <span>Click to upload</span>
+                                    <Label className="text-gray-300">Product Images</Label>
+                                    <div className="mt-2 space-y-3">
+                                        {/* Gallery Grid */}
+                                        {formData.images && formData.images.length > 0 && (
+                                            <div className="grid grid-cols-3 gap-2">
+                                                {formData.images.map((img, index) => (
+                                                    <div key={index} className="relative aspect-square rounded-lg overflow-hidden bg-gray-800 border border-gray-700 group">
+                                                        <Image
+                                                            src={img}
+                                                            alt={`Preview ${index}`}
+                                                            fill
+                                                            className="object-cover"
+                                                        />
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => handleRemoveImage(index)}
+                                                            className="absolute right-1 top-1 rounded-full bg-red-600 p-1 text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                                                        >
+                                                            <X className="h-3 w-3" />
+                                                        </button>
+                                                        {index === 0 && (
+                                                            <div className="absolute bottom-0 left-0 right-0 bg-black/60 text-white text-[10px] text-center py-0.5">
+                                                                Main
+                                                            </div>
+                                                        )}
                                                     </div>
-                                                )}
-                                            </button>
+                                                ))}
+                                            </div>
                                         )}
+
+                                        {/* Upload Button */}
+                                        <button
+                                            type="button"
+                                            onClick={() => fileInputRef.current?.click()}
+                                            disabled={uploadingImage}
+                                            className="flex aspect-video w-full items-center justify-center rounded-lg border-2 border-dashed border-gray-700 bg-gray-800/50 text-gray-400 hover:border-purple-500 hover:text-purple-400 transition-colors"
+                                        >
+                                            {uploadingImage ? (
+                                                <Loader2 className="h-8 w-8 animate-spin" />
+                                            ) : (
+                                                <div className="text-center">
+                                                    <ImagePlus className="mx-auto h-8 w-8 mb-2" />
+                                                    <span>Click to upload images</span>
+                                                    <p className="text-xs text-gray-500 mt-1">Add multiple images</p>
+                                                </div>
+                                            )}
+                                        </button>
+
                                         <input
                                             ref={fileInputRef}
                                             type="file"
                                             accept="image/*"
+                                            multiple // Allow multiple selection
                                             onChange={handleImageUpload}
                                             className="hidden"
                                         />

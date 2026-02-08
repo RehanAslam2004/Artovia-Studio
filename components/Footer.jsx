@@ -17,7 +17,7 @@ const footerLinks = {
         links: [
             { label: 'All Products', href: '/shop' },
             { label: 'Wedding Cards', href: '/shop?category=wedding-cards' },
-            { label: 'Templates', href: '/shop?category=templates' },
+            { label: 'Bundles', href: '/shop?category=bundles' },
             { label: 'Digital Art', href: '/shop?category=digital-art' },
         ],
     },
@@ -41,105 +41,119 @@ export default function Footer() {
     const currentYear = new Date().getFullYear();
 
     return (
-        <footer className="bg-gray-900 text-gray-300">
-            {/* Main Footer Content */}
-            <div className="container mx-auto px-4 py-10 sm:px-6 lg:px-8 lg:py-12">
-                <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
+        <footer className="relative mt-20 bg-pink-50/50 pt-20">
+            {/* Wave Divider (Top) */}
+            <div className="absolute top-0 left-0 right-0 -mt-20 overflow-hidden leading-none">
+                <svg
+                    className="relative block w-full h-20 text-pink-50/50"
+                    data-name="Layer 1"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 1200 120"
+                    preserveAspectRatio="none"
+                >
+                    <path
+                        d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z"
+                        className="fill-white"
+                    ></path>
+                </svg>
+            </div>
+
+            <div className="container mx-auto px-6 pb-12 pt-8">
+                <div className="grid grid-cols-1 gap-8 text-center md:grid-cols-4 md:text-left lg:gap-8">
                     {/* Brand Section */}
-                    <div className="lg:col-span-2">
-                        <Link href="/" className="inline-block">
-                            <span className="font-logo text-2xl font-semibold text-pink-400">
-                                Artovia <span className="text-gray-200">Studio</span>
-                            </span>
+                    <div className="col-span-1 md:col-span-1 lg:col-span-2">
+                        <Link href="/" className="inline-block group">
+                            <div className="flex flex-col items-center md:items-start leading-none">
+                                <span className="font-logo text-3xl md:text-4xl text-pink-500 drop-shadow-sm">
+                                    Artovia
+                                </span>
+                                <span className="font-simple text-[8px] md:text-[10px] text-gray-500 tracking-[0.2em] uppercase mt-1 border-t border-pink-200 pt-0.5 w-full text-center md:text-left">
+                                    By Ayesha Khan
+                                </span>
+                            </div>
                         </Link>
 
-                        <p className="mt-4 max-w-md text-sm leading-relaxed text-gray-400">
-                            Your destination for premium digital designs. Beautiful wedding cards,
-                            creative templates, and stunning digital art for your special moments.
+                        <p className="mt-4 text-sm leading-relaxed text-gray-500 font-medium max-w-xs mx-auto md:mx-0">
+                            Crafting moments into memories with premium digital designs. From elegant wedding cards to stunning art.
                         </p>
 
-                        {/* Contact - Email Only */}
-                        <div className="mt-5">
-                            <a
-                                href={`mailto:${contactEmail}`}
-                                className="flex items-center gap-3 text-sm transition-colors hover:text-pink-400"
-                            >
-                                <Mail className="h-4 w-4 text-pink-400" />
-                                <span>{contactEmail}</span>
-                            </a>
-                        </div>
-
-                        {/* Social Link - Instagram Only */}
-                        <div className="mt-5">
+                        <div className="mt-6 flex justify-center md:justify-start gap-4">
                             <motion.a
                                 href={instagramLink}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                aria-label="Instagram"
-                                className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-gray-800 text-gray-400 transition-colors hover:bg-pink-500 hover:text-white"
                                 whileHover={{ scale: 1.1 }}
-                                whileTap={{ scale: 0.95 }}
+                                whileTap={{ scale: 0.9 }}
+                                className="flex h-10 w-10 items-center justify-center rounded-full bg-white shadow-sm text-pink-500 hover:bg-pink-500 hover:text-white transition-all ring-1 ring-pink-100"
                             >
                                 <Instagram className="h-5 w-5" />
                             </motion.a>
+                            <a
+                                href={`mailto:${contactEmail}`}
+                                className="flex h-10 w-10 items-center justify-center rounded-full bg-white shadow-sm text-pink-500 hover:bg-pink-500 hover:text-white transition-all ring-1 ring-pink-100"
+                            >
+                                <Mail className="h-5 w-5" />
+                            </a>
                         </div>
                     </div>
 
-                    {/* Footer Links */}
-                    {Object.entries(footerLinks).map(([key, section]) => (
-                        <div key={key}>
-                            <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-white">
-                                {section.title}
-                            </h3>
-                            <ul className="space-y-2">
-                                {section.links.map((link) => (
-                                    <li key={link.label}>
-                                        <Link
-                                            href={link.href}
-                                            className="text-sm text-gray-400 transition-colors hover:text-pink-400"
-                                        >
-                                            {link.label}
-                                        </Link>
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
-                    ))}
-                </div>
+                    {/* Links Section */}
+                    <div className="col-span-1">
+                        <h3 className="mb-6 text-sm font-heading font-bold uppercase tracking-wider text-gray-900 border-b-2 border-pink-200 inline-block pb-1">
+                            Shop
+                        </h3>
+                        <ul className="space-y-3">
+                            {footerLinks.shop.links.map((link) => (
+                                <li key={link.label}>
+                                    <Link
+                                        href={link.href}
+                                        className="text-sm font-medium text-gray-600 hover:text-pink-500 transition-colors"
+                                    >
+                                        {link.label}
+                                    </Link>
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
 
-                {/* Payment Methods */}
-                <div className="mt-10 border-t border-gray-800 pt-6">
-                    <div>
-                        <h4 className="mb-3 text-sm font-semibold text-white">
-                            Accepted Payment Methods
-                        </h4>
-                        <div className="flex flex-wrap gap-2">
-                            <span className="rounded-full bg-gray-800 px-3 py-1.5 text-xs font-medium text-gray-300">
-                                JazzCash
-                            </span>
-                            <span className="rounded-full bg-gray-800 px-3 py-1.5 text-xs font-medium text-gray-300">
-                                EasyPaisa
-                            </span>
-                            <span className="rounded-full bg-gray-800 px-3 py-1.5 text-xs font-medium text-gray-300">
-                                NayaPay
-                            </span>
-                            <span className="rounded-full bg-gray-800 px-3 py-1.5 text-xs font-medium text-gray-300">
-                                Bank Transfer
-                            </span>
-                        </div>
+                    <div className="col-span-1">
+                        <h3 className="mb-6 text-sm font-heading font-bold uppercase tracking-wider text-gray-900 border-b-2 border-pink-200 inline-block pb-1">
+                            Support
+                        </h3>
+                        <ul className="space-y-3">
+                            {footerLinks.support.links.map((link) => (
+                                <li key={link.label}>
+                                    <Link
+                                        href={link.href}
+                                        className="text-sm font-medium text-gray-600 hover:text-pink-500 transition-colors"
+                                    >
+                                        {link.label}
+                                    </Link>
+                                </li>
+                            ))}
+                        </ul>
                     </div>
                 </div>
-            </div>
 
-            {/* Bottom Bar */}
-            <div className="border-t border-gray-800 bg-gray-950">
-                <div className="container mx-auto flex flex-col items-center justify-between gap-3 px-4 py-5 sm:flex-row sm:px-6 lg:px-8">
-                    <p className="text-center text-sm text-gray-500">
-                        © {currentYear} Artovia. All rights reserved.
-                    </p>
-                    <p className="flex items-center gap-1 text-sm text-gray-500">
-                        Made with <Heart className="h-3 w-3 text-pink-500" /> in Pakistan
-                    </p>
+                {/* Bottom Bar */}
+                <div className="mt-16 border-t border-pink-200/50 pt-8">
+                    <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
+                        <p className="text-sm font-medium text-gray-500">
+                            © {currentYear} Artovia Studio. All rights reserved.
+                        </p>
+
+                        <div className="flex gap-2 opacity-70 grayscale hover:grayscale-0 transition-all">
+                            {['JazzCash', 'EasyPaisa', 'NayaPay', 'Bank'].map((method) => (
+                                <span key={method} className="px-2 py-1 text-[10px] font-bold bg-white rounded border border-pink-100 text-gray-500">
+                                    {method}
+                                </span>
+                            ))}
+                        </div>
+
+                        <p className="flex items-center gap-1 text-sm font-medium text-gray-500">
+                            Made with <Heart className="h-3 w-3 text-pink-500 fill-pink-500 animate-pulse" />
+                        </p>
+                    </div>
                 </div>
             </div>
         </footer>

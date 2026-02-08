@@ -38,7 +38,7 @@ const sortOptions = [
 // Default categories
 const defaultCategories = [
     { id: 'wedding-cards', name: 'Wedding Cards' },
-    { id: 'templates', name: 'Templates' },
+    { id: 'bundles', name: 'Bundles' },
     { id: 'digital-art', name: 'Digital Art' },
     { id: 'social-media', name: 'Social Media' },
     { id: 'invitations', name: 'Invitations' },

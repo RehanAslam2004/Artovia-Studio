@@ -5,7 +5,7 @@
  * Includes global providers, fonts, and common UI elements.
  */
 
-import { Inter, Playfair_Display, Cinzel_Decorative } from 'next/font/google';
+import { Inter, Italiana, Outfit, Playfair_Display } from 'next/font/google';
 import './globals.css';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -14,24 +14,33 @@ import ClientProviders from './providers';
 import LayoutWrapper from '@/components/LayoutWrapper';
 import MainWrapper from '@/components/MainWrapper';
 
-// Font configuration
+// Body Font: Clean, sharp sans (Inter/Outfit)
 const inter = Inter({
   subsets: ['latin'],
   display: 'swap',
   variable: '--font-inter',
 });
 
+// Logo Font: Decent, Elegant Serif (Playfair Display)
 const playfair = Playfair_Display({
   subsets: ['latin'],
   display: 'swap',
   variable: '--font-playfair',
 });
 
-const cinzel = Cinzel_Decorative({
+// Headings: Sharp & Elegant (Italiana)
+const italiana = Italiana({
+  weight: '400',
   subsets: ['latin'],
-  weight: ['400', '700', '900'],
   display: 'swap',
-  variable: '--font-cinzel',
+  variable: '--font-italiana',
+});
+
+// UI / Clean Text: Modern Geometric Sans
+const outfit = Outfit({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-outfit',
 });
 
 // SEO Metadata
@@ -114,13 +123,13 @@ export const viewport = {
  */
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className={`${inter.variable} ${playfair.variable} ${cinzel.variable}`} suppressHydrationWarning style={{ scrollBehavior: 'smooth' }}>
+    <html lang="en" className={`${inter.variable} ${italiana.variable} ${playfair.variable} ${outfit.variable}`} suppressHydrationWarning style={{ scrollBehavior: 'smooth' }}>
       <body className="min-h-screen bg-white font-sans antialiased dark:bg-gray-950">
         <ClientProviders>
           {/* Skip to content link for accessibility */}
           <a
             href="#main-content"
-            className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-purple-600 focus:px-4 focus:py-2 focus:text-white"
+            className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-pink-600 focus:px-4 focus:py-2 focus:text-white"
           >
             Skip to content
           </a>

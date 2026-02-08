@@ -119,14 +119,17 @@ export default function Navbar() {
             <nav className="container mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex h-14 items-center justify-between lg:h-16">
                     {/* Logo */}
-                    <Link href="/" className="flex items-center">
+                    <Link href="/" className="flex items-center group">
                         <motion.div
-                            className="relative"
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.98 }}
+                            className="relative flex flex-col items-center leading-none py-1"
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
                         >
-                            <span className="font-decorative text-xl font-bold text-pink-500 lg:text-3xl tracking-wide">
-                                Artovia <span className="text-gray-700">Studio</span>
+                            <span className="font-logo text-2xl sm:text-3xl lg:text-4xl text-pink-500 drop-shadow-sm font-medium tracking-tight">
+                                Artovia
+                            </span>
+                            <span className="font-simple text-[8px] sm:text-[10px] text-gray-500 tracking-[0.2em] uppercase mt-0.5 group-hover:text-pink-400 transition-colors border-t border-pink-200 pt-0.5 px-1">
+                                By Ayesha Khan
                             </span>
                         </motion.div>
                     </Link>
@@ -282,127 +285,131 @@ export default function Navbar() {
                             </Button>
                         </Link>
 
-                        {/* Hamburger Menu */}
+                        {/* Hamburger Menu - Z-Index fix for overlay */}
                         <Button
                             variant="ghost"
                             size="icon-sm"
                             onClick={() => setIsOpen(!isOpen)}
                             aria-label="Toggle menu"
+                            className="relative z-50"
                         >
-                            {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+                            {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
                         </Button>
                     </div>
                 </div>
 
-                {/* Mobile Menu */}
+                {/* Mobile Menu Overlay */}
                 <AnimatePresence>
                     {isOpen && (
                         <motion.div
-                            initial={{ opacity: 0, height: 0 }}
-                            animate={{ opacity: 1, height: 'auto' }}
-                            exit={{ opacity: 0, height: 0 }}
-                            transition={{ duration: 0.2 }}
-                            className="overflow-hidden lg:hidden"
+                            initial={{ opacity: 0, x: '100%' }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: '100%' }}
+                            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                            className="fixed inset-0 z-50 bg-white lg:hidden flex flex-col pt-16"
                         >
-                            <div className="border-t border-pink-100 py-4">
-                                {/* Mobile Nav Links */}
-                                <div className="space-y-1">
-                                    {navLinks.map((link, index) => (
-                                        <motion.div
-                                            key={link.href}
-                                            initial={{ opacity: 0, x: -20 }}
-                                            animate={{ opacity: 1, x: 0 }}
-                                            transition={{ delay: index * 0.1 }}
-                                        >
-                                            <Link
-                                                href={link.href}
-                                                className={cn(
-                                                    'block rounded-lg px-4 py-3 text-base font-medium transition-colors',
-                                                    pathname === link.href
-                                                        ? 'bg-pink-50 text-pink-500'
-                                                        : 'text-gray-600 hover:bg-pink-50'
-                                                )}
+                            {/* Scrollable Container */}
+                            <div className="flex-1 overflow-y-auto px-6 pb-6">
+                                <div className="border-t border-pink-100 py-6 space-y-6">
+                                    {/* Mobile Nav Links */}
+                                    <div className="space-y-4">
+                                        {navLinks.map((link, index) => (
+                                            <motion.div
+                                                key={link.href}
+                                                initial={{ opacity: 0, y: 20 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                transition={{ delay: 0.1 + index * 0.1 }}
                                             >
-                                                {link.label}
-                                            </Link>
-                                        </motion.div>
-                                    ))}
-                                </div>
-
-                                {/* Mobile User Section */}
-                                <div className="mt-4 border-t border-pink-100 pt-4">
-                                    {isAuthenticated ? (
-                                        <div className="space-y-2">
-                                            <div className="px-4 py-2">
-                                                <p className="text-sm font-medium text-gray-800">
-                                                    {user?.name || 'User'}
-                                                </p>
-                                                <p className="text-xs text-gray-500">{user?.email}</p>
-                                            </div>
-
-                                            <Link
-                                                href="/account"
-                                                className="flex items-center gap-3 rounded-lg px-4 py-3 text-gray-600 hover:bg-pink-50"
-                                            >
-                                                <User className="h-5 w-5" />
-                                                My Profile
-                                            </Link>
-
-                                            <Link
-                                                href="/account/orders"
-                                                className="flex items-center gap-3 rounded-lg px-4 py-3 text-gray-600 hover:bg-pink-50 justify-between"
-                                            >
-                                                <div className="flex items-center gap-3">
-                                                    <Package className="h-5 w-5" />
-                                                    My Orders
-                                                </div>
-                                                {userActionCount > 0 && (
-                                                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-blue-500 text-[10px] font-bold text-white">
-                                                        {userActionCount}
-                                                    </span>
-                                                )}
-                                            </Link>
-
-                                            {isAdmin && (
                                                 <Link
-                                                    href="/admin/dashboard"
+                                                    href={link.href}
+                                                    className={cn(
+                                                        'block text-2xl font-bold tracking-tight transition-colors',
+                                                        pathname === link.href
+                                                            ? 'text-pink-500'
+                                                            : 'text-gray-900 hover:text-pink-500'
+                                                    )}
+                                                >
+                                                    {link.label}
+                                                </Link>
+                                            </motion.div>
+                                        ))}
+                                    </div>
+
+                                    {/* Mobile User Section */}
+                                    <div className="mt-4 border-t border-pink-100 pt-4">
+                                        {isAuthenticated ? (
+                                            <div className="space-y-2">
+                                                <div className="px-4 py-2">
+                                                    <p className="text-sm font-medium text-gray-800">
+                                                        {user?.name || 'User'}
+                                                    </p>
+                                                    <p className="text-xs text-gray-500">{user?.email}</p>
+                                                </div>
+
+                                                <Link
+                                                    href="/account"
+                                                    className="flex items-center gap-3 rounded-lg px-4 py-3 text-gray-600 hover:bg-pink-50"
+                                                >
+                                                    <User className="h-5 w-5" />
+                                                    My Profile
+                                                </Link>
+
+                                                <Link
+                                                    href="/account/orders"
                                                     className="flex items-center gap-3 rounded-lg px-4 py-3 text-gray-600 hover:bg-pink-50 justify-between"
                                                 >
                                                     <div className="flex items-center gap-3">
-                                                        <Settings className="h-5 w-5" />
-                                                        Admin Dashboard
+                                                        <Package className="h-5 w-5" />
+                                                        My Orders
                                                     </div>
-                                                    {pendingOrdersCount > 0 && (
-                                                        <span className="flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
-                                                            {pendingOrdersCount}
+                                                    {userActionCount > 0 && (
+                                                        <span className="flex h-5 w-5 items-center justify-center rounded-full bg-blue-500 text-[10px] font-bold text-white">
+                                                            {userActionCount}
                                                         </span>
                                                     )}
                                                 </Link>
-                                            )}
 
-                                            <button
-                                                onClick={handleLogout}
-                                                className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-red-500 hover:bg-red-50"
-                                            >
-                                                <LogOut className="h-5 w-5" />
-                                                Sign Out
-                                            </button>
-                                        </div>
-                                    ) : (
-                                        <div className="px-4">
-                                            <Link href="/login" className="block">
-                                                <Button className="w-full bg-pink-500 hover:bg-pink-600 rounded-full">
-                                                    Sign In
-                                                </Button>
-                                            </Link>
-                                        </div>
-                                    )}
+                                                {isAdmin && (
+                                                    <Link
+                                                        href="/admin/dashboard"
+                                                        className="flex items-center gap-3 rounded-lg px-4 py-3 text-gray-600 hover:bg-pink-50 justify-between"
+                                                    >
+                                                        <div className="flex items-center gap-3">
+                                                            <Settings className="h-5 w-5" />
+                                                            Admin Dashboard
+                                                        </div>
+                                                        {pendingOrdersCount > 0 && (
+                                                            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
+                                                                {pendingOrdersCount}
+                                                            </span>
+                                                        )}
+                                                    </Link>
+                                                )}
+
+                                                <button
+                                                    onClick={handleLogout}
+                                                    className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-red-500 hover:bg-red-50"
+                                                >
+                                                    <LogOut className="h-5 w-5" />
+                                                    Sign Out
+                                                </button>
+                                            </div>
+                                        ) : (
+                                            <div className="px-4">
+                                                <Link href="/login" className="block">
+                                                    <Button className="w-full bg-pink-500 hover:bg-pink-600 rounded-full">
+                                                        Sign In
+                                                    </Button>
+                                                </Link>
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                         </motion.div>
                     )}
                 </AnimatePresence>
             </nav>
-        </header>
+        </header >
     );
 }
