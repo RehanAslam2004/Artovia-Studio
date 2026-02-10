@@ -51,9 +51,25 @@ service cloud.firestore {
       allow update, delete: if isAdmin();
     }
     
-    // Users: Users can read/write their own data
+    // Users: Users can read/write their own data, Admin can read all
     match /users/{userId} {
-      allow read, write: if isAuthenticated() && request.auth.uid == userId;
+      allow read: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
+      allow write: if isAuthenticated() && request.auth.uid == userId;
+      // Allow admin to update points
+      allow update: if isAdmin();
+    }
+
+    // Points Transactions: Users read their own, Admin read/write all
+    match /points_transactions/{transactionId} {
+      allow read: if isAdmin() || (isAuthenticated() && resource.data.userId == request.auth.uid);
+      allow create: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    // Settings (rewards config, etc): Public read, Admin write
+    match /settings/{settingId} {
+      allow read: if true;
+      allow write: if isAdmin();
     }
 
     // Connection Test (for debugging)

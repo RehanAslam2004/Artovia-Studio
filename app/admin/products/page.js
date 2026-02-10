@@ -434,6 +434,9 @@ export default function AdminProductsPage() {
                                             alt={product.name}
                                             fill
                                             className="object-cover"
+                                            unoptimized={true}
+                                            priority={true}
+                                            style={{ opacity: 1 }}
                                         />
                                     ) : (
                                         <div className="flex h-full items-center justify-center">
@@ -550,6 +553,9 @@ export default function AdminProductsPage() {
                                                             alt={`Preview ${index}`}
                                                             fill
                                                             className="object-cover"
+                                                            unoptimized={true}
+                                                            priority={true}
+                                                            style={{ opacity: 1 }}
                                                         />
                                                         <button
                                                             type="button"

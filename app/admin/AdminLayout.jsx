@@ -3,7 +3,7 @@
 /**
  * Admin Layout Component
  * ======================
- * Shared layout for admin pages with sidebar navigation.
+ * Shared layout for admin pages with compact sidebar navigation.
  */
 
 import { useState } from 'react';
@@ -18,12 +18,12 @@ import {
     LogOut,
     Menu,
     X,
-    ChevronRight,
     Home,
     BarChart2,
-    MessageSquare
+    MessageSquare,
+    Star,
+    Gift
 } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
 import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
 
@@ -33,6 +33,8 @@ const navItems = [
     { href: '/admin/analytics', label: 'Analytics', icon: BarChart2 },
     { href: '/admin/products', label: 'Products', icon: Package },
     { href: '/admin/orders', label: 'Orders', icon: ShoppingCart },
+    { href: '/admin/points', label: 'Points', icon: Star },
+    { href: '/admin/rewards', label: 'Rewards', icon: Gift },
     { href: '/admin/reviews', label: 'Reviews', icon: MessageSquare },
     { href: '/admin/settings', label: 'Settings', icon: Settings },
 ];
@@ -62,34 +64,34 @@ export default function AdminLayout({ children }) {
                 )}
             </AnimatePresence>
 
-            {/* Sidebar */}
+            {/* Sidebar - Compact Design */}
             <aside
                 className={cn(
-                    'fixed left-0 top-0 z-50 h-screen w-64 transform bg-gray-900 border-r border-gray-800 transition-transform duration-300 lg:translate-x-0',
+                    'fixed left-0 top-0 z-50 h-screen w-56 transform bg-gray-900 border-r border-gray-800 transition-transform duration-300 lg:translate-x-0',
                     sidebarOpen ? 'translate-x-0' : '-translate-x-full'
                 )}
             >
                 {/* Logo */}
-                <div className="flex h-16 items-center justify-between border-b border-gray-800 px-6">
+                <div className="flex h-14 items-center justify-between border-b border-gray-800 px-4">
                     <Link href="/admin/dashboard" className="flex items-center gap-2">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-purple-500 to-pink-500">
-                            <span className="text-sm font-bold text-white">A</span>
+                        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-purple-500 to-pink-500">
+                            <span className="text-xs font-bold text-white">A</span>
                         </div>
-                        <span className="text-lg font-bold text-white">Admin</span>
+                        <span className="text-base font-bold text-white">Admin</span>
                     </Link>
                     <button
                         onClick={() => setSidebarOpen(false)}
                         className="lg:hidden text-gray-400 hover:text-white"
                     >
-                        <X className="h-5 w-5" />
+                        <X className="h-4 w-4" />
                     </button>
                 </div>
 
                 {/* Navigation */}
-                <nav className="flex flex-col h-[calc(100vh-4rem)]">
-                    <div className="flex-1 space-y-1 p-4">
-                        <p className="mb-2 px-4 text-xs font-semibold uppercase tracking-wider text-gray-400">
-                            Main Menu
+                <nav className="flex flex-col h-[calc(100vh-3.5rem)]">
+                    <div className="flex-1 py-2 px-2">
+                        <p className="mb-1 px-2 text-[10px] font-semibold uppercase tracking-wider text-gray-500">
+                            Menu
                         </p>
                         {navItems.map((item) => {
                             const Icon = item.icon;
@@ -101,50 +103,47 @@ export default function AdminLayout({ children }) {
                                     href={item.href}
                                     onClick={() => setSidebarOpen(false)}
                                     className={cn(
-                                        'group flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition-all duration-200',
+                                        'group flex items-center gap-2 rounded-md px-2 py-1.5 text-sm font-medium transition-all duration-150',
                                         isActive
-                                            ? 'bg-pink-600/10 text-pink-500 border-l-4 border-pink-500'
-                                            : 'text-gray-400 hover:bg-gray-800 hover:text-gray-200 border-l-4 border-transparent'
+                                            ? 'bg-pink-600/10 text-pink-500'
+                                            : 'text-gray-400 hover:bg-gray-800 hover:text-gray-200'
                                     )}
                                 >
-                                    <Icon className={cn("h-5 w-5 transition-colors", isActive ? "text-pink-500" : "text-gray-500 group-hover:text-gray-300")} />
-                                    {item.label}
-                                    {isActive && (
-                                        <ChevronRight className="ml-auto h-4 w-4 text-pink-500" />
-                                    )}
+                                    <Icon className={cn("h-4 w-4 shrink-0", isActive ? "text-pink-500" : "text-gray-500 group-hover:text-gray-300")} />
+                                    <span className="truncate">{item.label}</span>
                                 </Link>
                             );
                         })}
                     </div>
 
                     {/* Bottom Section */}
-                    <div className="border-t border-gray-800 p-4 space-y-2">
+                    <div className="border-t border-gray-800 py-2 px-2">
                         <Link
                             href="/"
                             target="_blank"
-                            className="group flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium text-gray-400 hover:bg-gray-800 hover:text-white transition-colors border-l-4 border-transparent"
+                            className="group flex items-center gap-2 rounded-md px-2 py-1.5 text-sm font-medium text-gray-400 hover:bg-gray-800 hover:text-white transition-colors"
                         >
-                            <Home className="h-5 w-5 text-gray-500 group-hover:text-gray-300" />
-                            View Website
+                            <Home className="h-4 w-4 text-gray-500 group-hover:text-gray-300" />
+                            <span>View Site</span>
                         </Link>
                         <button
                             onClick={handleLogout}
-                            className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium text-red-400 hover:bg-red-900/20 hover:text-red-300 transition-colors border-l-4 border-transparent"
+                            className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm font-medium text-red-400 hover:bg-red-900/20 hover:text-red-300 transition-colors"
                         >
-                            <LogOut className="h-5 w-5" />
-                            Log Out
+                            <LogOut className="h-4 w-4" />
+                            <span>Log Out</span>
                         </button>
                     </div>
 
-                    {/* User Info */}
-                    <div className="border-t border-gray-800 p-4 bg-gray-900/50">
-                        <div className="flex items-center gap-3">
-                            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-pink-500 to-purple-600 text-white font-bold shadow-lg shadow-pink-900/20 ring-2 ring-gray-800">
+                    {/* User Info - Compact */}
+                    <div className="border-t border-gray-800 p-3 bg-gray-900/50">
+                        <div className="flex items-center gap-2">
+                            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-pink-500 to-purple-600 text-white text-sm font-bold">
                                 {(user?.email?.charAt(0) || 'A').toUpperCase()}
                             </div>
                             <div className="flex-1 min-w-0">
-                                <p className="text-sm font-medium text-white truncate">Administrator</p>
-                                <p className="text-xs text-gray-500 truncate">{user?.email}</p>
+                                <p className="text-xs font-medium text-white truncate">Admin</p>
+                                <p className="text-[10px] text-gray-500 truncate">{user?.email}</p>
                             </div>
                         </div>
                     </div>
@@ -152,20 +151,20 @@ export default function AdminLayout({ children }) {
             </aside>
 
             {/* Main Content */}
-            <div className="lg:pl-64">
+            <div className="lg:pl-56">
                 {/* Mobile Header */}
-                <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b border-gray-800 bg-gray-900/80 backdrop-blur px-4 lg:hidden">
+                <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b border-gray-800 bg-gray-900/80 backdrop-blur px-4 lg:hidden">
                     <button
                         onClick={() => setSidebarOpen(true)}
                         className="text-gray-400 hover:text-white"
                     >
-                        <Menu className="h-6 w-6" />
+                        <Menu className="h-5 w-5" />
                     </button>
-                    <span className="text-lg font-bold text-white">Admin Panel</span>
+                    <span className="text-base font-bold text-white">Admin Panel</span>
                 </header>
 
                 {/* Page Content */}
-                <main className="p-4 sm:p-6 lg:p-8">
+                <main className="p-4 sm:p-5 lg:p-6">
                     {children}
                 </main>
             </div>

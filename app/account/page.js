@@ -19,7 +19,10 @@ import {
     Download,
     Clock,
     CheckCircle,
-    XCircle
+    XCircle,
+    Star,
+    Gift,
+    Sparkles
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
@@ -36,6 +39,10 @@ export default function AccountPage() {
 
     const [orders, setOrders] = useState([]);
     const [loadingOrders, setLoadingOrders] = useState(true);
+
+    // Loyalty Points State
+    const [userPoints, setUserPoints] = useState(0);
+    const [availableRewards, setAvailableRewards] = useState([]);
 
     // Redirect if not logged in
     useEffect(() => {
@@ -78,45 +85,68 @@ export default function AccountPage() {
         }
     }, [user, isAuthenticated]);
 
+    // Fetch user points and available rewards
+    useEffect(() => {
+        async function loadPointsData() {
+            if (!user?.uid) return;
+
+            try {
+                const { getUserPoints, getAvailableRewards } = await import('@/lib/points');
+                const [points, rewards] = await Promise.all([
+                    getUserPoints(user.uid),
+                    getAvailableRewards(await getUserPoints(user.uid))
+                ]);
+                setUserPoints(points);
+                setAvailableRewards(rewards);
+            } catch (error) {
+                console.error('Error loading points:', error);
+            }
+        }
+
+        if (isAuthenticated && user) {
+            loadPointsData();
+        }
+    }, [user, isAuthenticated]);
+
     const handleLogout = async () => {
         try {
             await logout();
             toast.success({ title: 'Logged out successfully' });
             router.push('/');
         } catch (error) {
-            toast.error({ title: 'Failed to log out' });
+            console.error('Logout error:', error);
+            toast.error({ title: 'Failed to logout' });
         }
     };
 
     const getStatusIcon = (status) => {
         switch (status) {
             case 'completed':
-            case 'approved':
-                return <CheckCircle className="h-4 w-4 text-green-600" />;
-            case 'cancelled':
-                return <XCircle className="h-4 w-4 text-red-600" />;
+                return <Check className="h-5 w-5 text-green-500" />;
+            case 'pending':
+                return <Clock className="h-5 w-5 text-yellow-500" />;
+            case 'processing':
+                return <Package className="h-5 w-5 text-blue-500" />;
             default:
-                return <Clock className="h-4 w-4 text-yellow-600" />;
+                return <Clock className="h-5 w-5 text-gray-500" />;
         }
     };
 
+    // Show loading state while checking authentication
     if (authLoading) {
         return (
-            <div className="min-h-screen flex items-center justify-center">
-                <Loader size="lg" />
+            <div className="min-h-screen flex items-center justify-center bg-pink-50/30">
+                <div className="text-center">
+                    <div className="animate-spin h-12 w-12 border-4 border-pink-500 border-t-transparent rounded-full mx-auto mb-4" />
+                    <p className="text-gray-600">Loading your account...</p>
+                </div>
             </div>
         );
     }
 
+    // If not authenticated and not loading, the useEffect will redirect
     if (!isAuthenticated) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900/50">
-                <div className="text-center">
-                    <Loader size="lg" />
-                    <p className="mt-4 text-gray-500">Redirecting to login...</p>
-                </div>
-            </div>
-        );
+        return null;
     }
 
     return (
@@ -165,6 +195,71 @@ export default function AccountPage() {
                                         <p className="text-sm text-gray-500">{user?.email}</p>
                                     </div>
                                 </div>
+                            </CardContent>
+                        </Card>
+
+                        {/* Points Balance Card */}
+                        <Card className="overflow-hidden">
+                            <div className="bg-gradient-to-br from-pink-500 via-purple-500 to-indigo-500 p-4">
+                                <div className="flex items-center gap-3">
+                                    <div className="p-2 bg-white/20 rounded-xl backdrop-blur-sm">
+                                        <Star className="h-6 w-6 text-white fill-white" />
+                                    </div>
+                                    <div>
+                                        <p className="text-sm text-white/80">Your Points</p>
+                                        <p className="text-3xl font-bold text-white">
+                                            {userPoints}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            <CardContent className="pt-4">
+                                <p className="text-sm text-gray-500 mb-3">Available Rewards</p>
+                                <div className="space-y-2">
+                                    {availableRewards.map((reward) => (
+                                        <div
+                                            key={reward.id}
+                                            className={`flex items-center justify-between p-3 rounded-lg border ${reward.unlocked
+                                                ? 'border-pink-200 bg-pink-50'
+                                                : 'border-gray-200 bg-gray-50 opacity-60'
+                                                }`}
+                                        >
+                                            <div className="flex items-center gap-2">
+                                                <div className={`p-1.5 rounded-lg ${reward.unlocked
+                                                    ? 'bg-gradient-to-br from-pink-400 to-purple-500'
+                                                    : 'bg-gray-300'
+                                                    }`}>
+                                                    {reward.unlocked ? (
+                                                        <Gift className="h-4 w-4 text-white" />
+                                                    ) : (
+                                                        <Sparkles className="h-4 w-4 text-gray-500" />
+                                                    )}
+                                                </div>
+                                                <div>
+                                                    <p className={`text-sm font-medium ${reward.unlocked ? 'text-gray-800' : 'text-gray-500'
+                                                        }`}>
+                                                        {reward.discountPercent}% OFF
+                                                    </p>
+                                                    <p className="text-xs text-gray-500">
+                                                        {reward.pointsRequired} pts
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            {reward.unlocked ? (
+                                                <Badge variant="success" className="text-xs">Unlocked</Badge>
+                                            ) : (
+                                                <span className="text-xs text-gray-400">
+                                                    {reward.pointsNeeded} more
+                                                </span>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                                <Link href="/shop" className="mt-3 block">
+                                    <Button size="sm" variant="outline" className="w-full border-pink-300 text-pink-500 hover:bg-pink-50">
+                                        Shop to Earn More
+                                    </Button>
+                                </Link>
                             </CardContent>
                         </Card>
 

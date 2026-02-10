@@ -42,12 +42,8 @@ export default function RegisterPage() {
     const [isLoading, setIsLoading] = useState(false);
     const [acceptTerms, setAcceptTerms] = useState(false);
 
-    // Redirect if already logged in
-    useEffect(() => {
-        if (!authLoading && isAuthenticated) {
-            router.push('/account');
-        }
-    }, [isAuthenticated, authLoading, router]);
+    // If already logged in, show message instead of form
+    // (handled in render)
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;

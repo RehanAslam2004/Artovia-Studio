@@ -131,9 +131,36 @@ export default function ProductDetails({ product, relatedProducts, initialReview
                                     onError={() => setImageError(true)}
                                 />
 
+                                {/* Watermark Overlay */}
+                                <div
+                                    className="absolute inset-0 z-10 pointer-events-none select-none overflow-hidden"
+                                    style={{ userSelect: 'none', WebkitUserSelect: 'none' }}
+                                    onContextMenu={(e) => e.preventDefault()}
+                                    onDragStart={(e) => e.preventDefault()}
+                                >
+                                    <div
+                                        className="absolute inset-[-50%] flex flex-wrap items-center justify-center gap-12"
+                                        style={{ transform: 'rotate(-30deg)' }}
+                                    >
+                                        {Array.from({ length: 20 }).map((_, i) => (
+                                            <span
+                                                key={i}
+                                                className="text-2xl sm:text-3xl font-bold whitespace-nowrap"
+                                                style={{
+                                                    color: 'rgba(255, 255, 255, 0.12)',
+                                                    textShadow: '0 0 4px rgba(0, 0, 0, 0.08)',
+                                                    letterSpacing: '0.1em'
+                                                }}
+                                            >
+                                                ARTOVIA STUDIO
+                                            </span>
+                                        ))}
+                                    </div>
+                                </div>
+
                                 {/* Featured Badge */}
                                 {product.featured && (
-                                    <div className="absolute left-4 top-4">
+                                    <div className="absolute left-4 top-4 z-20">
                                         <Badge className="bg-gradient-to-r from-purple-600 to-pink-600 text-white border-0">
                                             Featured
                                         </Badge>
@@ -148,8 +175,8 @@ export default function ProductDetails({ product, relatedProducts, initialReview
                                         <button
                                             key={index}
                                             onClick={() => setSelectedImage(index)}
-                                            className={`relative h-20 w-20 overflow-hidden rounded-lg border-2 transition-all ${selectedImage === index
-                                                ? 'border-purple-600'
+                                            className={`relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-lg border-2 transition-all bg-gray-100 ${selectedImage === index
+                                                ? 'border-purple-600 ring-2 ring-purple-200'
                                                 : 'border-transparent hover:border-gray-300'
                                                 }`}
                                         >
@@ -158,6 +185,7 @@ export default function ProductDetails({ product, relatedProducts, initialReview
                                                 alt={`${product.name} - ${index + 1}`}
                                                 fill
                                                 className="object-cover"
+                                                sizes="80px"
                                             />
                                         </button>
                                     ))}

@@ -21,7 +21,10 @@ import {
     Copy,
     ShoppingBag,
     Mail,
-    AlertCircle
+    AlertCircle,
+    Star,
+    Gift,
+    Sparkles
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -96,6 +99,12 @@ export default function CheckoutPage() {
     const [orderId, setOrderId] = useState(null);
     const [copiedField, setCopiedField] = useState(null);
 
+    // Loyalty Points State
+    const [userPoints, setUserPoints] = useState(0);
+    const [rewardTiers, setRewardTiers] = useState([]);
+    const [selectedTier, setSelectedTier] = useState(null);
+    const [loadingPoints, setLoadingPoints] = useState(false);
+
     // Load Firestore for guest sync
     const syncGuestCart = async (email) => {
         if (!email || !isLoaded || cart.length === 0) return;
@@ -127,6 +136,34 @@ export default function CheckoutPage() {
             return () => clearTimeout(timer);
         }
     }, [formData.email, cart, user]);
+
+    // Fetch user points and reward tiers
+    useEffect(() => {
+        async function loadPointsData() {
+            if (!isAuthenticated || !user?.uid) {
+                setUserPoints(0);
+                setRewardTiers([]);
+                return;
+            }
+
+            setLoadingPoints(true);
+            try {
+                const { getUserPoints, getRewardTiers } = await import('@/lib/points');
+                const [points, tiers] = await Promise.all([
+                    getUserPoints(user.uid),
+                    getRewardTiers()
+                ]);
+                setUserPoints(points);
+                setRewardTiers(tiers);
+            } catch (error) {
+                console.error('Error loading points:', error);
+            } finally {
+                setLoadingPoints(false);
+            }
+        }
+
+        loadPointsData();
+    }, [isAuthenticated, user?.uid]);
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -179,6 +216,11 @@ export default function CheckoutPage() {
         setIsSubmitting(true);
 
         try {
+            // Calculate discount if tier selected
+            const discountPercent = selectedTier?.discountPercent || 0;
+            const discountAmount = Math.round((getTotal() * discountPercent) / 100);
+            const finalTotal = getTotal() - discountAmount;
+
             const orderData = {
                 userId: user?.uid || null,
                 userEmail: formData.email.toLowerCase(),
@@ -186,11 +228,31 @@ export default function CheckoutPage() {
                 userPhone: formData.phone,
                 items: cart,
                 subtotal: getTotal(),
-                total: getTotal(),
+                discount: discountAmount,
+                discountPercent: discountPercent,
+                pointsUsed: selectedTier?.pointsRequired || 0,
+                total: finalTotal,
                 paymentMethod: selectedPayment,
                 transactionId: formData.transactionId || null,
                 notes: formData.notes || null,
             };
+
+            // Deduct points if using a tier
+            if (selectedTier && user?.uid) {
+                try {
+                    const { deductPoints } = await import('@/lib/points');
+                    await deductPoints(
+                        user.uid,
+                        user.email,
+                        selectedTier.pointsRequired,
+                        'redeemed',
+                        { note: `Redeemed for ${discountPercent}% off` }
+                    );
+                } catch (err) {
+                    console.error('Failed to deduct points:', err);
+                    // Continue with order even if points deduction fails
+                }
+            }
 
             // Race against a timeout to give better feedback
             const timeoutPromise = new Promise((_, reject) => {
@@ -628,6 +690,82 @@ export default function CheckoutPage() {
                                         ))}
                                     </div>
 
+                                    {/* Points Redemption Section */}
+                                    {isAuthenticated && userPoints > 0 && (
+                                        <motion.div
+                                            initial={{ opacity: 0, y: 10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            className="mt-4 border-t border-pink-100 pt-4"
+                                        >
+                                            <div className="flex items-center gap-2 mb-3">
+                                                <div className="p-1.5 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-lg">
+                                                    <Star className="h-4 w-4 text-white fill-white" />
+                                                </div>
+                                                <span className="font-semibold text-gray-800">Your Points</span>
+                                                <span className="ml-auto text-lg font-bold bg-gradient-to-r from-pink-500 to-purple-500 bg-clip-text text-transparent">
+                                                    {userPoints}
+                                                </span>
+                                            </div>
+
+                                            {rewardTiers.length > 0 && (
+                                                <div className="space-y-2">
+                                                    <p className="text-xs text-gray-500 mb-2">Redeem points for a discount:</p>
+                                                    {rewardTiers.map((tier) => {
+                                                        const isUnlocked = userPoints >= tier.pointsRequired;
+                                                        const isSelected = selectedTier?.id === tier.id;
+
+                                                        return (
+                                                            <button
+                                                                key={tier.id}
+                                                                type="button"
+                                                                disabled={!isUnlocked}
+                                                                onClick={() => setSelectedTier(isSelected ? null : tier)}
+                                                                className={`w-full flex items-center justify-between p-3 rounded-xl border-2 transition-all ${isSelected
+                                                                        ? 'border-pink-400 bg-pink-50 shadow-lg shadow-pink-100'
+                                                                        : isUnlocked
+                                                                            ? 'border-pink-200 bg-white hover:border-pink-300 hover:bg-pink-50/50'
+                                                                            : 'border-gray-200 bg-gray-50 opacity-60 cursor-not-allowed'
+                                                                    }`}
+                                                            >
+                                                                <div className="flex items-center gap-3">
+                                                                    <div className={`p-2 rounded-lg ${isUnlocked ? 'bg-gradient-to-br from-pink-400 to-purple-500' : 'bg-gray-300'}`}>
+                                                                        {isUnlocked ? (
+                                                                            <Gift className="h-4 w-4 text-white" />
+                                                                        ) : (
+                                                                            <Sparkles className="h-4 w-4 text-gray-500" />
+                                                                        )}
+                                                                    </div>
+                                                                    <div className="text-left">
+                                                                        <p className={`font-semibold ${isUnlocked ? 'text-gray-800' : 'text-gray-500'}`}>
+                                                                            {tier.discountPercent}% OFF
+                                                                        </p>
+                                                                        <p className="text-xs text-gray-500">
+                                                                            {tier.pointsRequired} points
+                                                                        </p>
+                                                                    </div>
+                                                                </div>
+                                                                {isSelected && (
+                                                                    <motion.div
+                                                                        initial={{ scale: 0 }}
+                                                                        animate={{ scale: 1 }}
+                                                                        className="h-5 w-5 rounded-full bg-pink-500 flex items-center justify-center"
+                                                                    >
+                                                                        <Check className="h-3 w-3 text-white" />
+                                                                    </motion.div>
+                                                                )}
+                                                                {!isUnlocked && (
+                                                                    <span className="text-xs text-gray-400">
+                                                                        Need {tier.pointsRequired - userPoints} more
+                                                                    </span>
+                                                                )}
+                                                            </button>
+                                                        );
+                                                    })}
+                                                </div>
+                                            )}
+                                        </motion.div>
+                                    )}
+
                                     {/* Totals */}
                                     <div className="mt-4 space-y-2 border-t border-pink-100 pt-4">
                                         <div className="flex justify-between text-sm">
@@ -638,6 +776,21 @@ export default function CheckoutPage() {
                                                 {formatPrice(total)}
                                             </span>
                                         </div>
+                                        {selectedTier && (
+                                            <motion.div
+                                                initial={{ opacity: 0, height: 0 }}
+                                                animate={{ opacity: 1, height: 'auto' }}
+                                                className="flex justify-between text-sm"
+                                            >
+                                                <span className="text-green-600 flex items-center gap-1">
+                                                    <Gift className="h-3 w-3" />
+                                                    Points Discount ({selectedTier.discountPercent}%)
+                                                </span>
+                                                <span className="text-green-600 font-medium">
+                                                    -{formatPrice(Math.round((total * selectedTier.discountPercent) / 100))}
+                                                </span>
+                                            </motion.div>
+                                        )}
                                         <div className="flex justify-between text-sm">
                                             <span className="text-gray-600">
                                                 Delivery
@@ -652,9 +805,16 @@ export default function CheckoutPage() {
                                         <span className="font-semibold text-gray-800">
                                             Total
                                         </span>
-                                        <span className="text-xl font-bold text-pink-500">
-                                            {formatPrice(total)}
-                                        </span>
+                                        <div className="text-right">
+                                            {selectedTier && (
+                                                <span className="text-sm text-gray-400 line-through mr-2">
+                                                    {formatPrice(total)}
+                                                </span>
+                                            )}
+                                            <span className="text-xl font-bold text-pink-500">
+                                                {formatPrice(selectedTier ? total - Math.round((total * selectedTier.discountPercent) / 100) : total)}
+                                            </span>
+                                        </div>
                                     </div>
 
                                     {/* Place Order Button */}

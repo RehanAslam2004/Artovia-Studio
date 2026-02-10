@@ -56,6 +56,9 @@ export default function CartItem({ item, className }) {
                         fill
                         className="object-cover transition-transform hover:scale-105"
                         onError={() => setImageError(true)}
+                        unoptimized={true}
+                        priority={true}
+                        style={{ opacity: 1 }}
                     />
                 </div>
             </Link>
@@ -156,6 +159,9 @@ export function CartItemCompact({ item, className }) {
                     fill
                     className="object-cover"
                     onError={() => setImageError(true)}
+                    unoptimized={true}
+                    priority={true}
+                    style={{ opacity: 1 }}
                 />
             </div>
 

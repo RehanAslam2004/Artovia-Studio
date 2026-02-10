@@ -8,8 +8,8 @@ import { NextResponse } from 'next/server';
  * Rules:
  * 1. /admin/*    -> Requires 'user_role' = 'admin'
  * 2. /account/*  -> Requires 'user_role' (any value)
- * 3. /login      -> Redirects to /account if logged in
- * 4. /register   -> Redirects to /account if logged in
+ * 3. /login      -> Allow always (shows logged-in state if applicable)
+ * 4. /register   -> Allow always (shows logged-in state if applicable)
  */
 export function middleware(request) {
     const { pathname } = request.nextUrl;
@@ -19,7 +19,7 @@ export function middleware(request) {
 
     // 1. Protect Admin Routes
     if (pathname.startsWith('/admin')) {
-        // Allow access to admin login page
+        // Allow access to admin login page always
         if (pathname === '/admin/login') {
             // If already admin, redirect to dashboard
             if (userRole === 'admin') {
@@ -41,14 +41,9 @@ export function middleware(request) {
         }
     }
 
-    // 3. Redirect authenticated users away from auth pages
-    if (pathname === '/login' || pathname === '/register') {
-        if (userRole) {
-            // If admin, go to admin dashboard, else customer dashboard
-            const destination = userRole === 'admin' ? '/admin/dashboard' : '/account';
-            return NextResponse.redirect(new URL(destination, request.url));
-        }
-    }
+    // 3. Customer login and register pages - always allow access
+    // Don't redirect logged-in users, let the page handle showing appropriate content
+    // This allows customers and admins to access /login without forced redirects
 
     return NextResponse.next();
 }

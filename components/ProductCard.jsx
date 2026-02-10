@@ -62,21 +62,17 @@ export default function ProductCard({ product, className }) {
             <Link href={`/product/${product.id}`}>
                 {/* Image Container */}
                 <div className="relative aspect-square overflow-hidden bg-pink-50">
-                    {/* Product Image */}
-                    <motion.div
-                        className="relative h-full w-full"
-                        animate={{ scale: isHovered ? 1.05 : 1 }}
-                        transition={{ duration: 0.4 }}
-                    >
-                        <Image
-                            src={productImage}
-                            alt={product.name}
-                            fill
-                            className="object-cover"
-                            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                            onError={() => setImageError(true)}
-                        />
-                    </motion.div>
+                    <Image
+                        src={productImage}
+                        alt={product.name}
+                        fill
+                        className="object-cover transition-transform duration-300 group-hover:scale-105"
+                        sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                        onError={() => setImageError(true)}
+                        unoptimized={true}
+                        priority={true}
+                        style={{ opacity: 1 }}
+                    />
 
                     {/* Overlay on Hover */}
                     <motion.div
