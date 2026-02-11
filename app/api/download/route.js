@@ -27,10 +27,6 @@ export async function GET(request) {
                 baseUrl = null;
             }
 
-            if (!baseUrl && process.env.NEXT_PUBLIC_VERCEL_URL) {
-                baseUrl = `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`;
-            }
-
             if (!baseUrl) {
                 baseUrl = 'https://artovia-studio.vercel.app';
             }
