@@ -28,12 +28,10 @@ service cloud.firestore {
     // - Update: Admin only (for status updates)
     match /orders/{orderId} {
       allow create: if true;
-      allow read: if isAdmin() || (isAuthenticated() && resource.data.userId == request.auth.uid);
-      
-      // Allow guests to read their own order via a special query if needed, 
-      // but usually we rely on the backend or email for that. 
-      // For now, let's keep it simple for authenticated users.
-
+      // Allow anyone with the ID (UUID) to read the order (needed for download page)
+      allow get: if true;
+      // Only admins or owners can list orders
+      allow list: if isAdmin() || (isAuthenticated() && resource.data.userId == request.auth.uid);
       allow update: if isAdmin();
     }
 
