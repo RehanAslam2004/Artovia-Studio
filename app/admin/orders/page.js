@@ -555,6 +555,16 @@ export default function AdminOrdersPage() {
                                                                     <span className="text-gray-300 font-mono">{order.transactionId}</span>
                                                                 </div>
                                                             )}
+
+                                                            {/* Customization Notes */}
+                                                            {order.notes && (
+                                                                <div className="mt-4 pt-3 border-t border-gray-800">
+                                                                    <p className="text-xs text-gray-500 mb-1 uppercase tracking-wider">Customization Details</p>
+                                                                    <div className="bg-gray-800/50 p-3 rounded-lg text-gray-300 text-sm whitespace-pre-wrap">
+                                                                        {order.notes}
+                                                                    </div>
+                                                                </div>
+                                                            )}
                                                         </div>
 
                                                         {order.downloadLinks?.length > 0 && (

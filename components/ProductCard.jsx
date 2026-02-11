@@ -80,7 +80,26 @@ export default function ProductCard({ product, className }) {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: isHovered ? 1 : 0 }}
                         transition={{ duration: 0.3 }}
+                        style={{ zIndex: 10 }}
                     />
+
+                    {/* Second Image on Hover */}
+                    {product.images && product.images.length > 1 && (
+                        <div
+                            className={`absolute inset-0 transition-opacity duration-300 ${isHovered ? 'opacity-100' : 'opacity-0'}`}
+                            style={{ zIndex: 5 }}
+                        >
+                            <Image
+                                src={product.images[1]}
+                                alt={`${product.name} - View 2`}
+                                fill
+                                className="object-cover"
+                                sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                                unoptimized={true}
+                                priority={false}
+                            />
+                        </div>
+                    )}
 
                     {/* Featured Badge */}
                     {product.featured && (

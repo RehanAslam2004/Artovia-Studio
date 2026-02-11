@@ -196,6 +196,10 @@ export default function CheckoutPage() {
             newErrors.transactionId = 'Transaction ID is required for verification';
         }
 
+        if (!formData.notes.trim()) {
+            newErrors.notes = 'Please provide customization details so we can personalize your design';
+        }
+
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
@@ -658,20 +662,24 @@ export default function CheckoutPage() {
                                 </CardContent>
                             </Card>
 
-                            {/* Additional Notes */}
+                            {/* Customization Details */}
                             <Card className="border-pink-100">
                                 <CardHeader>
-                                    <CardTitle>Additional Notes (Optional)</CardTitle>
+                                    <CardTitle>Write your customization details <span className="text-red-500">*</span></CardTitle>
                                 </CardHeader>
                                 <CardContent>
                                     <textarea
                                         name="notes"
                                         value={formData.notes}
                                         onChange={handleInputChange}
-                                        placeholder="Any special instructions or requests..."
-                                        rows={3}
-                                        className="w-full rounded-lg border border-pink-200 bg-white px-4 py-3 text-sm transition-all focus:border-pink-400 focus:outline-none focus:ring-2 focus:ring-pink-400/20"
+                                        placeholder="Please provide names, dates, venue details, and any other customization requests..."
+                                        rows={4}
+                                        className={`w-full rounded-lg border bg-white px-4 py-3 text-sm transition-all focus:outline-none focus:ring-2 focus:ring-pink-400/20 ${errors.notes ? 'border-red-500 focus:border-red-500' : 'border-pink-200 focus:border-pink-400'
+                                            }`}
                                     />
+                                    {errors.notes && (
+                                        <p className="mt-1 text-xs text-red-500">{errors.notes}</p>
+                                    )}
                                 </CardContent>
                             </Card>
                         </div>
@@ -721,10 +729,10 @@ export default function CheckoutPage() {
                                                                 disabled={!isUnlocked}
                                                                 onClick={() => setSelectedTier(isSelected ? null : tier)}
                                                                 className={`w-full flex items-center justify-between p-3 rounded-xl border-2 transition-all ${isSelected
-                                                                        ? 'border-pink-400 bg-pink-50 shadow-lg shadow-pink-100'
-                                                                        : isUnlocked
-                                                                            ? 'border-pink-200 bg-white hover:border-pink-300 hover:bg-pink-50/50'
-                                                                            : 'border-gray-200 bg-gray-50 opacity-60 cursor-not-allowed'
+                                                                    ? 'border-pink-400 bg-pink-50 shadow-lg shadow-pink-100'
+                                                                    : isUnlocked
+                                                                        ? 'border-pink-200 bg-white hover:border-pink-300 hover:bg-pink-50/50'
+                                                                        : 'border-gray-200 bg-gray-50 opacity-60 cursor-not-allowed'
                                                                     }`}
                                                             >
                                                                 <div className="flex items-center gap-3">

@@ -73,9 +73,9 @@ export default function ProductDetails({ product, relatedProducts, initialReview
     const supportEmail = process.env.NEXT_PUBLIC_SUPPORT_EMAIL || 'artovia.business@gmail.com';
     const inCart = isInCart(product.id);
 
-    const productImage = imageError || !product.imageUrl
+    const productImage = imageError || !(product.imageUrl || product.images?.[selectedImage])
         ? '/images/placeholder-product.png'
-        : product.imageUrl;
+        : (product.images?.[selectedImage] || product.imageUrl);
 
     return (
         <div className="min-h-screen bg-white dark:bg-gray-950">
