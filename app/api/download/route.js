@@ -22,6 +22,10 @@ export async function GET(request) {
         if (!fileUrl.startsWith('http')) {
             // Get base URL with robust fallback
             let baseUrl = process.env.NEXT_PUBLIC_SITE_URL;
+            // Ignore localhost to force production URL
+            if (baseUrl && (baseUrl.includes('localhost') || baseUrl.includes('127.0.0.1'))) {
+                baseUrl = null;
+            }
 
             if (!baseUrl && process.env.NEXT_PUBLIC_VERCEL_URL) {
                 baseUrl = `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`;
