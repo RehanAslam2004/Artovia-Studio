@@ -20,8 +20,16 @@ export async function GET(request) {
 
         // Handle relative URLs (e.g. from mock data or local images)
         if (!fileUrl.startsWith('http')) {
-            // Get base URL from environment or default to localhost
-            const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+            // Get base URL with robust fallback
+            let baseUrl = process.env.NEXT_PUBLIC_SITE_URL;
+
+            if (!baseUrl && process.env.NEXT_PUBLIC_VERCEL_URL) {
+                baseUrl = `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`;
+            }
+
+            if (!baseUrl) {
+                baseUrl = 'https://artovia-studio.vercel.app';
+            }
 
             // Ensure fileUrl starts with / if not present
             if (!fileUrl.startsWith('/')) fileUrl = '/' + fileUrl;
