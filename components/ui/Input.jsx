@@ -21,7 +21,7 @@ const Input = React.forwardRef(
                 <input
                     type={type}
                     className={cn(
-                        'flex h-11 w-full rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm text-gray-900 shadow-sm transition-all duration-200',
+                        'flex h-11 w-full rounded-lg border border-gray-300 bg-white px-4 py-2 text-base md:text-sm text-gray-900 shadow-sm transition-all duration-200',
                         'placeholder:text-gray-400',
                         'focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/20',
                         'disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-gray-50',

@@ -9,37 +9,45 @@ import {
     Shield,
     Zap,
     Heart,
-    ChevronRight
+    ChevronRight,
+    Camera,
+    Smartphone,
+    PenTool,
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import ProductCard from '@/components/ProductCard';
 
 // Categories data
+// Categories data with Glassmorphic Gradient styles
 const categories = [
     {
         id: 'wedding-cards',
         name: 'Wedding Cards',
         description: 'Elegant invitations for your special day',
-        color: 'from-pink-400 to-rose-400',
+        color: 'from-rose-400 via-pink-400 to-fuchsia-400',
+        icon: Heart,
     },
     {
         id: 'custom-request',
         name: 'Custom Request',
         description: 'Get a design tailored just for you',
-        color: 'from-pink-500 to-fuchsia-400',
-        href: '/custom-request', // Direct link
+        color: 'from-violet-500 via-fuchsia-400 to-pink-400',
+        href: '/custom-request',
+        icon: PenTool,
     },
     {
-        id: 'digital-art',
-        name: 'Digital Art',
-        description: 'Unique artistic creations',
-        color: 'from-rose-400 to-pink-500',
+        id: 'lightroom-templates',
+        name: 'Lightroom Templates',
+        description: 'Professional presets for your photos',
+        color: 'from-cyan-400 via-sky-400 to-blue-500',
+        icon: Camera,
     },
     {
         id: 'social-media',
         name: 'Social Media',
         description: 'Posts, stories & banners',
-        color: 'from-fuchsia-400 to-pink-400',
+        color: 'from-fuchsia-400 via-pink-400 to-amber-300',
+        icon: Smartphone,
     },
 ];
 
@@ -207,35 +215,44 @@ export default function HomeContent({ featuredProducts }) {
                         whileInView="visible"
                         viewport={{ once: true }}
                         variants={staggerContainer}
-                        className="grid grid-cols-2 gap-3 sm:gap-8 lg:grid-cols-4"
+                        className="grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-4"
                     >
                         {categories.map((category) => (
-                            <motion.div key={category.id} variants={fadeInUp}>
-                                <Link href={category.href || `/shop?category=${category.id}`}>
+                            <motion.div key={category.id} variants={fadeInUp} className="h-full">
+                                <Link href={category.href || `/shop?category=${category.id}`} className="block h-full">
                                     <motion.div
-                                        whileHover={{ scale: 1.05, y: -5 }}
+                                        whileHover={{ scale: 1.03 }}
                                         whileTap={{ scale: 0.98 }}
-                                        className="group relative overflow-hidden rounded-2xl bg-white shadow-md transition-all hover:shadow-xl border border-pink-100 h-full"
+                                        className="group relative h-full min-h-[260px] sm:min-h-[300px] overflow-hidden rounded-[2rem] shadow-lg transition-all duration-300 hover:shadow-2xl"
                                     >
-                                        {/* Category Image Placeholder */}
-                                        <div className={`aspect-[4/3] bg-gradient-to-br ${category.color} relative overflow-hidden`}>
-                                            <div className="absolute inset-0 bg-white/10 group-hover:bg-white/0 transition-colors" />
-                                            <div className="flex h-full items-center justify-center">
-                                                <Sparkles className="h-12 w-12 sm:h-16 sm:w-16 text-white/80 drop-shadow-md transition-transform duration-500 group-hover:scale-110 group-hover:rotate-12" />
-                                            </div>
-                                        </div>
+                                        {/* Mesh Gradient Background */}
+                                        <div className={`absolute inset-0 bg-gradient-to-br ${category.color} bg-[length:400%_400%] animate-gradient-xy`} />
 
-                                        {/* Category Info */}
-                                        <div className="p-5">
-                                            <h3 className="text-base sm:text-lg font-bold text-gray-900 group-hover:text-pink-600 transition-colors">
-                                                {category.name}
-                                            </h3>
-                                            <p className="mt-2 text-xs sm:text-sm text-gray-500 hidden sm:block line-clamp-2">
-                                                {category.description}
-                                            </p>
-                                            <div className="mt-4 flex items-center text-xs sm:text-sm font-semibold text-pink-500">
-                                                Explore
-                                                <ChevronRight className="ml-1 h-3 w-3 sm:h-4 sm:w-4 transition-transform group-hover:translate-x-1" />
+                                        {/* Glassmorphic Overlay */}
+                                        <div className="absolute inset-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl flex flex-col items-center p-4 sm:p-6 text-center transition-all duration-300 group-hover:bg-white/20 group-hover:border-white/30 shadow-inner">
+
+                                            {/* Icon Area - Fixed Height for Alignment */}
+                                            <div className="h-16 sm:h-20 flex items-center justify-center mb-2 relative shrink-0">
+                                                <div className="absolute inset-0 bg-white/20 blur-xl rounded-full scale-150 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                                                <category.icon className="relative h-8 w-8 sm:h-10 sm:w-10 text-white drop-shadow-md stroke-[1.5]" />
+                                            </div>
+
+                                            {/* Text Content - Flex Grow to push button down */}
+                                            <div className="flex-grow flex flex-col items-center justify-start">
+                                                <h3 className="text-base sm:text-xl font-extrabold text-white mb-2 tracking-wide drop-shadow-sm leading-tight">
+                                                    {category.name}
+                                                </h3>
+                                                <p className="hidden sm:block text-sm text-pink-50 font-medium line-clamp-2 leading-relaxed opacity-90">
+                                                    {category.description}
+                                                </p>
+                                            </div>
+
+                                            {/* Explore Link - Anchored to Bottom */}
+                                            <div className="mt-auto pt-3 sm:pt-4">
+                                                <div className="flex items-center text-[10px] sm:text-xs font-bold text-white bg-white/20 px-4 py-2 rounded-full backdrop-blur-sm group-hover:bg-white group-hover:text-pink-600 transition-all duration-300 uppercase tracking-wider">
+                                                    Explore
+                                                    <ChevronRight className="ml-1 h-3 w-3 transition-transform group-hover:translate-x-1" />
+                                                </div>
                                             </div>
                                         </div>
                                     </motion.div>

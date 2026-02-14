@@ -41,6 +41,11 @@ service cloud.firestore {
     match /guest_carts/{cartId} {
       allow read, write: if true; 
     }
+
+    // User Carts: Authenticated users can read/write their own cart
+    match /carts/{userId} {
+      allow read, write: if isAuthenticated() && request.auth.uid == userId;
+    }
     
     // Reviews: Public read, Authenticated write
     match /reviews/{reviewId} {

@@ -65,7 +65,10 @@ export function CartProvider({ children }) {
                 }, { merge: true });
 
             } catch (error) {
-                console.error('Error syncing cart to Firestore:', error);
+                // Silently handle permission errors (e.g., user not fully authenticated yet)
+                if (error?.code !== 'permission-denied') {
+                    console.warn('Cart sync issue:', error?.message);
+                }
             }
         }
 

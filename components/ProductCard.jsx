@@ -162,7 +162,7 @@ export default function ProductCard({ product, className }) {
                             variant={inCart ? 'success' : 'outline'}
                             size="sm"
                             className={cn(
-                                "lg:hidden text-xs px-3 py-1 h-8 rounded-full",
+                                "lg:hidden text-xs px-4 h-10 rounded-full font-medium shadow-sm",
                                 !inCart && "border-pink-300 text-pink-500 hover:bg-pink-50"
                             )}
                             onClick={handleAddToCart}
