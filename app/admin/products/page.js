@@ -46,10 +46,11 @@ import { formatPrice, debounce, cn } from '@/lib/utils';
 const categories = [
     'wedding-cards',
     'bundles',
-    'digital-art',
+    'lightroom-templates',
     'social-media',
     'invitations',
     'business',
+    'occasion-cards',
     'other'
 ];
 
