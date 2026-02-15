@@ -150,7 +150,8 @@ export default function ProductDetails({ product, relatedProducts, initialReview
                                 initial={{ opacity: 0, scale: 0.95 }}
                                 animate={{ opacity: 1, scale: 1 }}
                                 transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                                className="relative w-full h-full"
+                                className="relative w-full h-full select-none"
+                                onContextMenu={(e) => e.preventDefault()}
                             >
                                 <Image
                                     src={currentImageSrc}
@@ -159,8 +160,20 @@ export default function ProductDetails({ product, relatedProducts, initialReview
                                     className="object-contain"
                                     quality={100}
                                     priority
+                                    draggable={false}
                                     sizes="(max-width: 1280px) 100vw, 1280px"
                                 />
+
+                                {/* Watermark Overlay (Visible in Lightbox) */}
+                                <div className="absolute inset-0 pointer-events-none opacity-20 overflow-hidden z-10">
+                                    <div className="absolute inset-[-50%] flex flex-wrap items-center justify-center gap-12 rotate-[-30deg]">
+                                        {Array.from({ length: 15 }).map((_, i) => (
+                                            <span key={i} className="text-4xl font-bold text-white drop-shadow-md whitespace-nowrap select-none">
+                                                ARTOVIA STUDIO
+                                            </span>
+                                        ))}
+                                    </div>
+                                </div>
                             </motion.div>
                         </div>
 

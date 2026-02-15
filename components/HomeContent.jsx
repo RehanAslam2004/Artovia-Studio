@@ -13,6 +13,7 @@ import {
     Camera,
     Smartphone,
     PenTool,
+    Gift,
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import ProductCard from '@/components/ProductCard';

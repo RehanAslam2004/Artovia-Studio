@@ -123,7 +123,7 @@ export const viewport = {
  */
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className={`${inter.variable} ${italiana.variable} ${playfair.variable} ${outfit.variable}`} suppressHydrationWarning style={{ scrollBehavior: 'smooth' }}>
+    <html lang="en" className={`${inter.variable} ${italiana.variable} ${playfair.variable} ${outfit.variable} scroll-smooth`} suppressHydrationWarning>
       <body className="min-h-screen bg-white font-sans antialiased dark:bg-gray-950">
         <ClientProviders>
           {/* Skip to content link for accessibility */}
