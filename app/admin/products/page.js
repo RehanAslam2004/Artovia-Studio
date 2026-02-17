@@ -47,8 +47,8 @@ const categories = [
     'wedding-cards',
     'bundles',
     'lightroom-templates',
+    'e-books',
     'social-media',
-    'invitations',
     'business',
     'occasion-cards',
     'other'

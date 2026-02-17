@@ -42,6 +42,7 @@ const categories = [
         description: 'Professional presets for your photos',
         color: 'from-cyan-400 via-sky-400 to-blue-500',
         icon: Camera,
+        comingSoon: true,
     },
     {
         id: 'social-media',
@@ -258,10 +259,16 @@ export default function HomeContent({ featuredProducts }) {
 
                                             {/* Explore Link - Anchored to Bottom */}
                                             <div className="mt-auto pt-3 sm:pt-4">
-                                                <div className="flex items-center text-[10px] sm:text-xs font-bold text-white bg-white/20 px-4 py-2 rounded-full backdrop-blur-sm group-hover:bg-white group-hover:text-pink-600 transition-all duration-300 uppercase tracking-wider">
-                                                    Explore
-                                                    <ChevronRight className="ml-1 h-3 w-3 transition-transform group-hover:translate-x-1" />
-                                                </div>
+                                                {category.comingSoon ? (
+                                                    <div className="flex items-center text-[10px] sm:text-xs font-bold text-white bg-white/20 px-4 py-2 rounded-full backdrop-blur-sm uppercase tracking-wider cursor-default">
+                                                        Coming Soon
+                                                    </div>
+                                                ) : (
+                                                    <div className="flex items-center text-[10px] sm:text-xs font-bold text-white bg-white/20 px-4 py-2 rounded-full backdrop-blur-sm group-hover:bg-white group-hover:text-pink-600 transition-all duration-300 uppercase tracking-wider">
+                                                        Explore
+                                                        <ChevronRight className="ml-1 h-3 w-3 transition-transform group-hover:translate-x-1" />
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
                                     </motion.div>

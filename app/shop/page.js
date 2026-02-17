@@ -15,7 +15,8 @@ import {
     Grid3X3,
     LayoutList,
     ChevronDown,
-    X
+    X,
+    Sparkles
 } from 'lucide-react';
 import ProductCard, { ProductCardHorizontal } from '@/components/ProductCard';
 import { ProductsGridSkeleton } from '@/components/Loader';
@@ -38,10 +39,10 @@ const sortOptions = [
 // Default categories
 const defaultCategories = [
     { id: 'wedding-cards', name: 'Wedding Cards' },
-    { id: 'bundles', name: 'Bundles' },
-    { id: 'lightroom-templates', name: 'Lightroom Templates' },
+    { id: 'bundles', name: 'Bundles', comingSoon: true },
+    { id: 'lightroom-templates', name: 'Lightroom Templates', comingSoon: true },
+    { id: 'e-books', name: 'E-Books' },
     { id: 'social-media', name: 'Social Media' },
-    { id: 'invitations', name: 'Invitations' },
     { id: 'business', name: 'Business' },
     { id: 'occasion-cards', name: 'Occasion Cards' },
 ];
@@ -83,10 +84,14 @@ function ShopContent() {
                     const uniqueCategories = [...new Set([
                         ...defaultCategories.map(c => c.id),
                         ...categoriesResult.categories
-                    ])].map(id => ({
-                        id,
-                        name: defaultCategories.find(c => c.id === id)?.name || id.replace(/-/g, ' ')
-                    }));
+                    ])].map(id => {
+                        const defaultCat = defaultCategories.find(c => c.id === id);
+                        return {
+                            id,
+                            name: defaultCat?.name || id.replace(/-/g, ' '),
+                            ...defaultCat // Preserve all properties like comingSoon
+                        };
+                    });
                     setCategories(uniqueCategories);
                 }
             } catch (error) {
@@ -310,13 +315,18 @@ function ShopContent() {
                                         key={category.id}
                                         onClick={() => setSelectedCategory(category.id)}
                                         className={cn(
-                                            'w-full rounded-lg px-3 py-2 text-left text-sm transition-colors capitalize',
+                                            'w-full flex items-center justify-between rounded-lg px-3 py-2 text-left text-sm transition-colors capitalize group',
                                             selectedCategory === category.id
                                                 ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300'
                                                 : 'text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800'
                                         )}
                                     >
-                                        {category.name}
+                                        <span>{category.name}</span>
+                                        {category.comingSoon && (
+                                            <span className="text-[10px] font-bold text-pink-500 bg-pink-100 px-1.5 py-0.5 rounded-full uppercase tracking-wider">
+                                                Coming Soon
+                                            </span>
+                                        )}
                                     </button>
                                 ))}
                             </div>
@@ -367,46 +377,82 @@ function ShopContent() {
                         </div>
 
                         {/* Products */}
-                        {loading ? (
-                            <ProductsGridSkeleton count={8} />
-                        ) : filteredProducts.length > 0 ? (
-                            viewMode === 'grid' ? (
-                                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
-                                    {filteredProducts.map((product) => (
-                                        <ProductCard key={product.id} product={product} />
-                                    ))}
-                                </div>
+                        {(() => {
+                            // detailed check for coming soon
+                            const currentCategory = categories.find(c => c.id === selectedCategory);
+
+                            if (loading) {
+                                return <ProductsGridSkeleton count={8} />;
+                            }
+
+                            if (currentCategory?.comingSoon) {
+                                return (
+                                    <motion.div
+                                        initial={{ opacity: 0, y: 20 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        className="flex flex-col items-center justify-center py-20 text-center rounded-2xl bg-white border border-gray-100 dark:bg-gray-900 dark:border-gray-800 shadow-sm"
+                                    >
+                                        <div className="mb-6 relative">
+                                            <div className="absolute inset-0 bg-pink-500/20 blur-2xl rounded-full" />
+                                            <Sparkles className="relative h-16 w-16 text-pink-500" />
+                                        </div>
+                                        <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                                            {currentCategory.name} is Coming Soon!
+                                        </h3>
+                                        <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto mb-8">
+                                            We're working hard to bring you an amazing collection of {currentCategory.name.toLowerCase()}.
+                                            Stay tuned for updates!
+                                        </p>
+                                        <Button
+                                            onClick={clearFilters}
+                                            variant="outline"
+                                            className="border-pink-200 text-pink-600 hover:bg-pink-50"
+                                        >
+                                            View Other Categories
+                                        </Button>
+                                    </motion.div>
+                                );
+                            }
+
+                            return filteredProducts.length > 0 ? (
+                                viewMode === 'grid' ? (
+                                    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
+                                        {filteredProducts.map((product) => (
+                                            <ProductCard key={product.id} product={product} />
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="space-y-4">
+                                        {filteredProducts.map((product) => (
+                                            <ProductCardHorizontal key={product.id} product={product} />
+                                        ))}
+                                    </div>
+                                )
                             ) : (
-                                <div className="space-y-4">
-                                    {filteredProducts.map((product) => (
-                                        <ProductCardHorizontal key={product.id} product={product} />
-                                    ))}
-                                </div>
-                            )
-                        ) : (
-                            <motion.div
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                className="flex flex-col items-center justify-center rounded-xl border border-dashed border-gray-300 bg-gray-50 py-16 dark:border-gray-700 dark:bg-gray-900"
-                            >
-                                <div className="mb-4 rounded-full bg-gray-100 p-4 dark:bg-gray-800">
-                                    <Search className="h-8 w-8 text-gray-400" />
-                                </div>
-                                <h3 className="text-lg font-medium text-gray-900 dark:text-white">
-                                    No products found
-                                </h3>
-                                <p className="mt-1 text-gray-500 dark:text-gray-400">
-                                    Try adjusting your search or filters
-                                </p>
-                                <Button
-                                    variant="outline"
-                                    className="mt-4"
-                                    onClick={clearFilters}
+                                <motion.div
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    className="flex flex-col items-center justify-center rounded-xl border border-dashed border-gray-300 bg-gray-50 py-16 dark:border-gray-700 dark:bg-gray-900"
                                 >
-                                    Clear Filters
-                                </Button>
-                            </motion.div>
-                        )}
+                                    <div className="mb-4 rounded-full bg-gray-100 p-4 dark:bg-gray-800">
+                                        <Search className="h-8 w-8 text-gray-400" />
+                                    </div>
+                                    <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+                                        No products found
+                                    </h3>
+                                    <p className="mt-1 text-gray-500 dark:text-gray-400">
+                                        Try adjusting your search or filters
+                                    </p>
+                                    <Button
+                                        variant="outline"
+                                        className="mt-4"
+                                        onClick={clearFilters}
+                                    >
+                                        Clear Filters
+                                    </Button>
+                                </motion.div>
+                            );
+                        })()}
                     </div>
                 </div>
             </div>
