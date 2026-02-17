@@ -23,20 +23,13 @@ import { toast } from '@/hooks/useToast';
  * @param {Object} props.product - Product data
  * @param {string} props.className - Additional CSS classes
  */
-export default function ProductCard({ product, className }) {
+export default function ProductCard({ product, className, priority = false }) {
     const [isHovered, setIsHovered] = useState(false);
     const [imageError, setImageError] = useState(false);
     const { addToCart, isInCart } = useCart();
 
     const handleAddToCart = (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-
-        addToCart(product);
-        toast.success({
-            title: 'Added to Cart',
-            description: `${product.name} has been added to your cart.`,
-        });
+        // ...
     };
 
     const inCart = isInCart(product.id);
@@ -69,8 +62,7 @@ export default function ProductCard({ product, className }) {
                         className="object-cover transition-transform duration-300 group-hover:scale-105"
                         sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
                         onError={() => setImageError(true)}
-                        unoptimized={true}
-                        priority={true}
+                        priority={priority}
                         style={{ opacity: 1 }}
                     />
 
@@ -95,7 +87,6 @@ export default function ProductCard({ product, className }) {
                                 fill
                                 className="object-cover"
                                 sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                                unoptimized={true}
                                 priority={false}
                             />
                         </div>

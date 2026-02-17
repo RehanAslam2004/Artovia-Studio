@@ -78,8 +78,15 @@ const features = [
 
 // Animation variants
 const fadeInUp = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0 },
+    hidden: { opacity: 0, y: 30 },
+    visible: {
+        opacity: 1,
+        y: 0,
+        transition: {
+            duration: 0.8,
+            ease: [0.22, 1, 0.36, 1] // Custom ease-out cubic
+        }
+    },
 };
 
 const staggerContainer = {
@@ -87,7 +94,8 @@ const staggerContainer = {
     visible: {
         opacity: 1,
         transition: {
-            staggerChildren: 0.1,
+            staggerChildren: 0.15,
+            delayChildren: 0.1
         },
     },
 };
@@ -178,7 +186,7 @@ export default function HomeContent({ featuredProducts }) {
                             className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4"
                         >
                             <Link href="/shop">
-                                <Button size="lg" className="group h-12 min-w-[180px] text-base bg-pink-500 hover:bg-pink-600 rounded-full shadow-lg shadow-pink-500/25">
+                                <Button size="lg" className="group h-12 min-w-[180px] text-base bg-gradient-to-r from-pink-400 to-pink-500 hover:from-pink-500 hover:to-pink-600 rounded-full shadow-lg shadow-pink-500/25 border-0">
                                     Browse Collection
                                     <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
                                 </Button>
@@ -292,8 +300,12 @@ export default function HomeContent({ featuredProducts }) {
 
                     {featuredProducts && featuredProducts.length > 0 ? (
                         <div className="grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-3 xl:grid-cols-4">
-                            {featuredProducts.map((product) => (
-                                <ProductCard key={product.id} product={product} />
+                            {featuredProducts.map((product, index) => (
+                                <ProductCard
+                                    key={product.id}
+                                    product={product}
+                                    priority={index < 4}
+                                />
                             ))}
                         </div>
                     ) : (
@@ -302,7 +314,7 @@ export default function HomeContent({ featuredProducts }) {
                                 No featured products yet. Check back soon!
                             </p>
                             <Link href="/shop" className="mt-4 inline-block">
-                                <Button className="bg-pink-500 hover:bg-pink-600 rounded-full">
+                                <Button className="bg-gradient-to-r from-pink-400 to-pink-500 hover:from-pink-500 hover:to-pink-600 rounded-full border-0">
                                     Browse All Products
                                 </Button>
                             </Link>
