@@ -37,45 +37,23 @@ import { toast } from '@/hooks/useToast';
 import { createOrder } from '@/lib/orders';
 import { formatPrice, isValidEmail, isValidPakistaniPhone } from '@/lib/utils';
 
-// Payment methods configuration - No WhatsApp
 const paymentMethods = [
     {
         id: 'jazzcash',
         name: 'JazzCash',
         icon: Smartphone,
         color: 'bg-red-500',
-        accountNumber: process.env.NEXT_PUBLIC_JAZZCASH_NUMBER || '03001234567',
-        accountTitle: 'Artovia Studio',
-        instructions: 'Send payment to the JazzCash number below and note down the Transaction ID.',
+        instructions: 'JazzCash payments are currently unavailable.',
+        disabled: true,
+        badge: 'Coming Soon',
     },
     {
         id: 'easypaisa',
         name: 'EasyPaisa',
         icon: Smartphone,
         color: 'bg-green-500',
-        accountNumber: process.env.NEXT_PUBLIC_EASYPAISA_NUMBER || '03001234567',
-        accountTitle: 'Artovia Studio',
-        instructions: 'Send payment to the EasyPaisa number below and note down the Transaction ID.',
-    },
-    {
-        id: 'nayapay',
-        name: 'NayaPay',
-        icon: CreditCard,
-        color: 'bg-purple-500',
-        accountNumber: process.env.NEXT_PUBLIC_NAYAPAY_NUMBER || '03001234567',
-        accountTitle: 'Artovia Studio',
-        instructions: 'Send payment to the NayaPay account below and note down the Transaction ID.',
-    },
-    {
-        id: 'bank',
-        name: 'Bank Transfer',
-        icon: Building,
-        color: 'bg-blue-500',
-        bankName: process.env.NEXT_PUBLIC_BANK_NAME || 'Bank Name',
-        accountTitle: process.env.NEXT_PUBLIC_BANK_ACCOUNT_TITLE || 'Account Holder Name',
-        accountNumber: process.env.NEXT_PUBLIC_BANK_ACCOUNT_NUMBER || '1234567890123',
-        iban: process.env.NEXT_PUBLIC_BANK_IBAN || 'PK00BANK0000001234567890',
-        instructions: 'Transfer the amount to the bank account below. Use your order email as reference.',
+        instructions: 'Scan the QR code below to pay, then enter the Transaction ID.',
+        qrCode: '/images/easypaisa-qr.jpeg',
     },
 ];
 
@@ -93,7 +71,7 @@ export default function CheckoutPage() {
         notes: '',
     });
     const [errors, setErrors] = useState({});
-    const [selectedPayment, setSelectedPayment] = useState('jazzcash');
+    const [selectedPayment, setSelectedPayment] = useState('easypaisa');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [orderPlaced, setOrderPlaced] = useState(false);
     const [orderId, setOrderId] = useState(null);
@@ -511,23 +489,32 @@ export default function CheckoutPage() {
                                     <div className="grid gap-3 sm:grid-cols-2">
                                         {paymentMethods.map((method) => {
                                             const Icon = method.icon;
+                                            const isDisabled = method.disabled;
                                             return (
                                                 <button
                                                     key={method.id}
                                                     type="button"
-                                                    onClick={() => setSelectedPayment(method.id)}
-                                                    className={`flex items-center gap-3 rounded-lg border-2 p-4 transition-all ${selectedPayment === method.id
-                                                        ? 'border-pink-400 bg-pink-50'
-                                                        : 'border-gray-200 hover:border-pink-200'
+                                                    disabled={isDisabled}
+                                                    onClick={() => !isDisabled && setSelectedPayment(method.id)}
+                                                    className={`relative flex items-center gap-3 rounded-lg border-2 p-4 transition-all ${isDisabled
+                                                        ? 'border-gray-100 bg-gray-50 opacity-70 cursor-not-allowed'
+                                                        : selectedPayment === method.id
+                                                            ? 'border-pink-400 bg-pink-50'
+                                                            : 'border-gray-200 hover:border-pink-200'
                                                         }`}
                                                 >
-                                                    <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${method.color} text-white`}>
+                                                    <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${isDisabled ? 'bg-gray-400' : method.color} text-white`}>
                                                         <Icon className="h-5 w-5" />
                                                     </div>
                                                     <span className="font-medium text-gray-800">
                                                         {method.name}
                                                     </span>
-                                                    {selectedPayment === method.id && (
+                                                    {method.badge && (
+                                                        <span className="absolute -top-2 -right-2 bg-pink-500 text-white text-[10px] uppercase font-bold px-2 py-0.5 rounded-full shadow-sm">
+                                                            {method.badge}
+                                                        </span>
+                                                    )}
+                                                    {!isDisabled && selectedPayment === method.id && (
                                                         <Check className="ml-auto h-5 w-5 text-pink-500" />
                                                     )}
                                                 </button>
@@ -547,99 +534,22 @@ export default function CheckoutPage() {
                                                 {selectedMethod.instructions}
                                             </p>
 
-                                            {['jazzcash', 'easypaisa', 'nayapay'].includes(selectedMethod.id) ? (
-                                                <div className="space-y-3">
-                                                    <div className="flex items-center justify-between rounded-lg bg-white p-3 border border-pink-100">
-                                                        <div>
-                                                            <p className="text-xs text-gray-500">Account Number</p>
-                                                            <p className="font-mono font-bold text-gray-800">
-                                                                {selectedMethod.accountNumber}
-                                                            </p>
-                                                        </div>
-                                                        <Button
-                                                            type="button"
-                                                            variant="ghost"
-                                                            size="icon-sm"
-                                                            onClick={() => copyToClipboard(selectedMethod.accountNumber, 'number')}
-                                                        >
-                                                            {copiedField === 'number' ? (
-                                                                <Check className="h-4 w-4 text-green-600" />
-                                                            ) : (
-                                                                <Copy className="h-4 w-4" />
-                                                            )}
-                                                        </Button>
+                                            {/* QR Code Section */}
+                                            {selectedMethod.qrCode && (
+                                                <div className="mb-6 flex flex-col items-center">
+                                                    <div className="bg-white p-3 rounded-xl border border-dashed border-pink-200 shadow-sm mb-2">
+                                                        {/* Using standard img for local asset */}
+                                                        <img
+                                                            src={selectedMethod.qrCode}
+                                                            alt={`${selectedMethod.name} QR Code`}
+                                                            className="w-48 h-48 object-contain"
+                                                        />
                                                     </div>
-                                                    <div className="flex items-center justify-between rounded-lg bg-white p-3 border border-pink-100">
-                                                        <div>
-                                                            <p className="text-xs text-gray-500">Account Title</p>
-                                                            <p className="font-medium text-gray-800">
-                                                                {selectedMethod.accountTitle}
-                                                            </p>
-                                                        </div>
-                                                    </div>
+                                                    <p className="text-xs font-bold text-pink-600 uppercase tracking-wide">
+                                                        Scan to Pay
+                                                    </p>
                                                 </div>
-                                            ) : selectedMethod.id === 'bank' ? (
-                                                <div className="space-y-3">
-                                                    <div className="flex items-center justify-between rounded-lg bg-white p-3 border border-pink-100">
-                                                        <div>
-                                                            <p className="text-xs text-gray-500">Bank Name</p>
-                                                            <p className="font-medium text-gray-800">
-                                                                {selectedMethod.bankName}
-                                                            </p>
-                                                        </div>
-                                                    </div>
-                                                    <div className="flex items-center justify-between rounded-lg bg-white p-3 border border-pink-100">
-                                                        <div>
-                                                            <p className="text-xs text-gray-500">Account Title</p>
-                                                            <p className="font-medium text-gray-800">
-                                                                {selectedMethod.accountTitle}
-                                                            </p>
-                                                        </div>
-                                                    </div>
-                                                    <div className="flex items-center justify-between rounded-lg bg-white p-3 border border-pink-100">
-                                                        <div>
-                                                            <p className="text-xs text-gray-500">Account Number</p>
-                                                            <p className="font-mono font-bold text-gray-800">
-                                                                {selectedMethod.accountNumber}
-                                                            </p>
-                                                        </div>
-                                                        <Button
-                                                            type="button"
-                                                            variant="ghost"
-                                                            size="icon-sm"
-                                                            onClick={() => copyToClipboard(selectedMethod.accountNumber, 'account')}
-                                                        >
-                                                            {copiedField === 'account' ? (
-                                                                <Check className="h-4 w-4 text-green-600" />
-                                                            ) : (
-                                                                <Copy className="h-4 w-4" />
-                                                            )}
-                                                        </Button>
-                                                    </div>
-                                                    {selectedMethod.iban && (
-                                                        <div className="flex items-center justify-between rounded-lg bg-white p-3 border border-pink-100">
-                                                            <div>
-                                                                <p className="text-xs text-gray-500">IBAN</p>
-                                                                <p className="font-mono text-sm font-bold text-gray-800">
-                                                                    {selectedMethod.iban}
-                                                                </p>
-                                                            </div>
-                                                            <Button
-                                                                type="button"
-                                                                variant="ghost"
-                                                                size="icon-sm"
-                                                                onClick={() => copyToClipboard(selectedMethod.iban, 'iban')}
-                                                            >
-                                                                {copiedField === 'iban' ? (
-                                                                    <Check className="h-4 w-4 text-green-600" />
-                                                                ) : (
-                                                                    <Copy className="h-4 w-4" />
-                                                                )}
-                                                            </Button>
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            ) : null}
+                                            )}
                                         </motion.div>
                                     )}
 
