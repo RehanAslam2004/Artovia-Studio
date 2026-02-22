@@ -6,12 +6,12 @@ export default function robots() {
             {
                 userAgent: '*',
                 allow: '/',
-                disallow: ['/admin/', '/account/', '/api/', '/checkout/', '/download/'],
+                disallow: ['/admin/', '/account/', '/api/', '/checkout/', '/cart/', '/download/'],
             },
             {
                 userAgent: 'Googlebot',
                 allow: '/',
-                disallow: ['/admin/', '/account/', '/api/', '/checkout/', '/download/'],
+                disallow: ['/admin/', '/account/', '/api/', '/checkout/', '/cart/', '/download/'],
             },
         ],
         sitemap: `${baseUrl}/sitemap.xml`,

@@ -19,12 +19,12 @@ export default async function sitemap() {
 
     // Static routes with priorities
     const routes = [
-        { path: '', priority: 1, changeFrequency: 'daily' },
+        { path: '', priority: 1.0, changeFrequency: 'daily' },
         { path: '/shop', priority: 0.9, changeFrequency: 'daily' },
+        { path: '/custom-request', priority: 0.8, changeFrequency: 'weekly' },
         { path: '/contact', priority: 0.7, changeFrequency: 'monthly' },
-        { path: '/custom-request', priority: 0.7, changeFrequency: 'monthly' },
-        { path: '/login', priority: 0.5, changeFrequency: 'yearly' },
-        { path: '/register', priority: 0.5, changeFrequency: 'yearly' },
+        { path: '/login', priority: 0.4, changeFrequency: 'yearly' },
+        { path: '/register', priority: 0.4, changeFrequency: 'yearly' },
         { path: '/terms', priority: 0.3, changeFrequency: 'yearly' },
         { path: '/privacy', priority: 0.3, changeFrequency: 'yearly' },
     ].map((route) => ({

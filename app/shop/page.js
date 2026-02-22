@@ -397,7 +397,7 @@ function ShopContent() {
                                             <Sparkles className="relative h-16 w-16 text-pink-500" />
                                         </div>
                                         <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                                            {currentCategory.name} is Coming Soon!
+                                            {currentCategory.name} are Coming Soon!
                                         </h3>
                                         <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto mb-8">
                                             We're working hard to bring you an amazing collection of {currentCategory.name.toLowerCase()}.

@@ -63,7 +63,7 @@ const features = [
     {
         icon: Shield,
         title: 'Secure Payment',
-        description: 'JazzCash, EasyPaisa, NayaPay & Bank Transfer',
+        description: 'Pay via EasyPaisa QR — fast, safe, and easy to use',
     },
     {
         icon: Zap,
