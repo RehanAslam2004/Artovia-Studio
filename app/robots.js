@@ -1,5 +1,7 @@
 export default function robots() {
-    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://artoviastudio.com';
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL && !process.env.NEXT_PUBLIC_SITE_URL.includes('localhost')
+        ? process.env.NEXT_PUBLIC_SITE_URL.replace(/\/$/, '')
+        : 'https://artovia-studio.vercel.app';
 
     return {
         rules: [

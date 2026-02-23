@@ -1,7 +1,10 @@
 import { getAllProducts } from '@/lib/products';
 
 export default async function sitemap() {
-    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://artoviastudio.com';
+    // Robust site URL detection
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL && !process.env.NEXT_PUBLIC_SITE_URL.includes('localhost')
+        ? process.env.NEXT_PUBLIC_SITE_URL.replace(/\/$/, '')
+        : 'https://artovia-studio.vercel.app'; // Fallback to current production URL
 
     // Get all products
     let productUrls = [];
