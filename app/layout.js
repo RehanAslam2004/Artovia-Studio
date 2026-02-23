@@ -121,6 +121,9 @@ export const metadata = {
     apple: '/favicon-96x96.png',
   },
   manifest: '/site.webmanifest',
+  verification: {
+    google: 'v-Qmks9uwIEq0Edz14R9fXP8U3Y2vpGlz-GH1gtTrVU',
+  },
 };
 
 // Viewport configuration
