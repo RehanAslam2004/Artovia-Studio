@@ -1,6 +1,9 @@
 import { getFeaturedProducts } from '@/lib/products';
 import HomeContent from '@/components/HomeContent';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export const metadata = {
   title: 'Artovia Studio - Premium Digital Designs, Wedding Cards & Templates',
   description: 'Discover elegant wedding cards, creative templates, and stunning digital art at Artovia Studio. Custom designs, instant digital downloads, and premium quality for your special moments. Shop now!',

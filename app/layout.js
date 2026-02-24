@@ -145,6 +145,27 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en" className={`${inter.variable} ${italiana.variable} ${playfair.variable} ${outfit.variable} scroll-smooth`} suppressHydrationWarning>
       <body className="min-h-screen bg-white font-sans antialiased dark:bg-gray-950">
+        {/* JSON-LD Structured Data for Site Name */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "WebSite",
+              "name": "Artovia Studio",
+              "url": "https://artovia-studio.vercel.app",
+              "description": "Premium digital designs — wedding cards, templates, and digital art.",
+              "publisher": {
+                "@type": "Organization",
+                "name": "Artovia Studio",
+                "logo": {
+                  "@type": "ImageObject",
+                  "url": "https://artovia-studio.vercel.app/favicon-96x96.png"
+                }
+              }
+            })
+          }}
+        />
         <ClientProviders>
           {/* Skip to content link for accessibility */}
           <a
