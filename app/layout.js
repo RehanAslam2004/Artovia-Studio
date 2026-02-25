@@ -10,6 +10,8 @@ import './globals.css';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { Toaster } from '@/components/ui/Toaster';
+import Link from 'next/link';
+import Script from 'next/script';
 import ClientProviders from './providers';
 import LayoutWrapper from '@/components/LayoutWrapper';
 import MainWrapper from '@/components/MainWrapper';
@@ -144,6 +146,20 @@ export const viewport = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en" className={`${inter.variable} ${italiana.variable} ${playfair.variable} ${outfit.variable} scroll-smooth`} suppressHydrationWarning>
+      {/* Google Analytics */}
+      <Script
+        src="https://www.googletagmanager.com/gtag/js?id=G-PLZ54EN8F1"
+        strategy="afterInteractive"
+      />
+      <Script id="google-analytics" strategy="afterInteractive">
+        {`
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+
+          gtag('config', 'G-PLZ54EN8F1');
+        `}
+      </Script>
       <body className="min-h-screen bg-white font-sans antialiased dark:bg-gray-950">
         {/* JSON-LD Structured Data for Site Name */}
         <script
