@@ -4,6 +4,7 @@
  * Admin Dashboard Page
  * ====================
  * Main admin dashboard with overview stats and quick actions.
+ * Enhanced with premium visual design.
  */
 
 import { useState, useEffect } from 'react';
@@ -17,13 +18,18 @@ import {
     Users,
     DollarSign,
     TrendingUp,
+    TrendingDown,
     Clock,
     CheckCircle,
     Plus,
     Eye,
     ArrowRight,
     Search,
-    CreditCard
+    CreditCard,
+    Sparkles,
+    Activity,
+    BarChart3,
+    Zap
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
@@ -49,6 +55,15 @@ const containerVariants = {
 const itemVariants = {
     hidden: { opacity: 0, y: 20 },
     visible: { opacity: 1, y: 0 }
+};
+
+const pulseGlow = {
+    hidden: { opacity: 0, scale: 0.95 },
+    visible: {
+        opacity: 1,
+        scale: 1,
+        transition: { duration: 0.5, ease: 'easeOut' }
+    }
 };
 
 export default function AdminDashboard() {
@@ -116,33 +131,49 @@ export default function AdminDashboard() {
             title: 'Total Revenue',
             value: formatPrice(stats.totalRevenue),
             icon: DollarSign,
-            color: 'bg-emerald-500/10 text-emerald-500',
-            border: 'border-emerald-500/20',
-            trend: '+12.5%'
+            color: 'text-emerald-400',
+            bgColor: 'bg-emerald-500/10',
+            borderColor: 'border-emerald-500/20',
+            glowColor: 'shadow-emerald-500/5',
+            trendIcon: TrendingUp,
+            trend: '+12.5%',
+            trendUp: true,
         },
         {
             title: 'Total Orders',
             value: stats.totalOrders,
             icon: ShoppingCart,
-            color: 'bg-blue-500/10 text-blue-500',
-            border: 'border-blue-500/20',
-            trend: '+5.2%'
+            color: 'text-blue-400',
+            bgColor: 'bg-blue-500/10',
+            borderColor: 'border-blue-500/20',
+            glowColor: 'shadow-blue-500/5',
+            trendIcon: TrendingUp,
+            trend: '+5.2%',
+            trendUp: true,
         },
         {
             title: 'Pending Orders',
             value: stats.pendingOrders,
             icon: Clock,
-            color: 'bg-orange-500/10 text-orange-500',
-            border: 'border-orange-500/20',
-            trend: 'Action needed'
+            color: 'text-orange-400',
+            bgColor: 'bg-orange-500/10',
+            borderColor: 'border-orange-500/20',
+            glowColor: 'shadow-orange-500/5',
+            trendIcon: TrendingDown,
+            trend: 'Needs attention',
+            trendUp: false,
         },
         {
             title: 'Active Products',
             value: stats.totalProducts,
             icon: Package,
-            color: 'bg-purple-500/10 text-purple-500',
-            border: 'border-purple-500/20',
-            trend: '+2 new'
+            color: 'text-purple-400',
+            bgColor: 'bg-purple-500/10',
+            borderColor: 'border-purple-500/20',
+            glowColor: 'shadow-purple-500/5',
+            trendIcon: TrendingUp,
+            trend: '+2 new',
+            trendUp: true,
         },
     ];
 
@@ -154,51 +185,73 @@ export default function AdminDashboard() {
                 animate="visible"
                 className="space-y-8 max-w-7xl mx-auto"
             >
-                {/* Header Section */}
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 p-6 rounded-2xl border border-gray-800 shadow-xl">
-                    <div className="space-y-1">
-                        <h1 className="text-3xl font-bold text-white tracking-tight">Dashboard Overview</h1>
-                        <p className="text-gray-400">Welcome back, <span className="text-pink-400 font-medium">{user?.name || 'Admin'}</span></p>
+                {/* Header Section — Premium Gradient */}
+                <motion.div
+                    variants={pulseGlow}
+                    className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 p-6 md:p-8 border border-gray-800 shadow-2xl"
+                >
+                    {/* Decorative background elements */}
+                    <div className="absolute inset-0 pointer-events-none">
+                        <div className="absolute -top-24 -right-24 h-48 w-48 rounded-full bg-pink-500/10 blur-3xl" />
+                        <div className="absolute -bottom-16 -left-16 h-40 w-40 rounded-full bg-purple-500/10 blur-3xl" />
                     </div>
-                    <div className="flex gap-3">
-                        <Link href="/" target="_blank">
-                            <Button variant="outline" className="border-gray-700 hover:bg-gray-700 text-gray-300">
-                                <Eye className="mr-2 h-4 w-4" />
-                                View Site
-                            </Button>
-                        </Link>
-                        <Link href="/admin/products?action=new">
-                            <Button className="bg-pink-600 hover:bg-pink-700 text-white shadow-lg shadow-pink-900/20 hover:shadow-pink-900/40 transition-all">
-                                <Plus className="mr-2 h-4 w-4" />
-                                New Product
-                            </Button>
-                        </Link>
-                    </div>
-                </div>
 
-                {/* Stats Grid */}
-                <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+                    <div className="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                        <div className="space-y-2">
+                            <div className="flex items-center gap-2">
+                                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-pink-500 to-purple-600 shadow-lg shadow-pink-500/20">
+                                    <LayoutDashboard className="h-5 w-5 text-white" />
+                                </div>
+                                <h1 className="text-2xl md:text-3xl font-bold text-white tracking-tight">Dashboard Overview</h1>
+                            </div>
+                            <p className="text-gray-400">
+                                Welcome back, <span className="text-pink-400 font-semibold">{user?.name || 'Admin'}</span>
+                                <span className="hidden sm:inline"> — here&apos;s what&apos;s happening with your store</span>
+                            </p>
+                        </div>
+                        <div className="flex gap-3">
+                            <Link href="/" target="_blank">
+                                <Button variant="outline" className="border-gray-700 hover:bg-gray-700/50 text-gray-300 backdrop-blur-sm">
+                                    <Eye className="mr-2 h-4 w-4" />
+                                    View Site
+                                </Button>
+                            </Link>
+                            <Link href="/admin/products?action=new">
+                                <Button className="bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 text-white shadow-lg shadow-pink-900/30 hover:shadow-pink-900/50 transition-all">
+                                    <Plus className="mr-2 h-4 w-4" />
+                                    New Product
+                                </Button>
+                            </Link>
+                        </div>
+                    </div>
+                </motion.div>
+
+                {/* Stats Grid — Enhanced with Glow & Better Trends */}
+                <div className="grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-4">
                     {statCards.map((stat, index) => {
                         const Icon = stat.icon;
+                        const TrendIcon = stat.trendIcon;
                         return (
                             <motion.div key={stat.title} variants={itemVariants}>
-                                <Card className={`border-gray-800 bg-gray-900/50 hover:bg-gray-900/80 transition-all duration-300 backdrop-blur-sm ${stat.border} border`}>
-                                    <CardContent className="p-6">
+                                <Card className={`relative overflow-hidden border ${stat.borderColor} bg-gray-900/50 hover:bg-gray-900/80 transition-all duration-300 backdrop-blur-sm shadow-lg ${stat.glowColor}`}>
+                                    {/* Subtle glow accent */}
+                                    <div className={`absolute top-0 right-0 h-24 w-24 rounded-full ${stat.bgColor} blur-2xl opacity-50`} />
+                                    <CardContent className="relative p-6">
                                         <div className="flex items-start justify-between">
-                                            <div>
+                                            <div className="space-y-1">
                                                 <p className="text-sm font-medium text-gray-400">{stat.title}</p>
-                                                <h3 className="mt-2 text-2xl font-bold text-white tracking-tight">
+                                                <h3 className="text-2xl md:text-3xl font-bold text-white tracking-tight">
                                                     {stat.value}
                                                 </h3>
-                                                <div className="mt-2 flex items-center text-xs">
-                                                    <span className={`font-medium ${stat.trend.includes('+') ? 'text-green-400' : 'text-orange-400'}`}>
+                                                <div className="flex items-center gap-1 mt-2">
+                                                    <TrendIcon className={`h-3.5 w-3.5 ${stat.trendUp ? 'text-green-400' : 'text-orange-400'}`} />
+                                                    <span className={`text-xs font-semibold ${stat.trendUp ? 'text-green-400' : 'text-orange-400'}`}>
                                                         {stat.trend}
                                                     </span>
-                                                    <span className="text-gray-500 ml-2">from last month</span>
                                                 </div>
                                             </div>
-                                            <div className={`p-3 rounded-xl ${stat.color}`}>
-                                                <Icon className="h-6 w-6" />
+                                            <div className={`p-3 rounded-xl ${stat.bgColor} ring-1 ring-white/5`}>
+                                                <Icon className={`h-6 w-6 ${stat.color}`} />
                                             </div>
                                         </div>
                                     </CardContent>
@@ -208,15 +261,16 @@ export default function AdminDashboard() {
                     })}
                 </div>
 
-                <div className="grid gap-8 lg:grid-cols-3">
-                    {/* Recent Orders - Takes up 2 columns */}
-                    {/* ... */}
-                    {/* Recent Orders - Takes up 2 columns */}
+                <div className="grid gap-6 lg:gap-8 lg:grid-cols-3">
+                    {/* Recent Orders — Enhanced Table */}
                     <motion.div variants={itemVariants} className="lg:col-span-2">
-                        <Card className="border-gray-800 bg-gray-900/50 h-full shadow-lg">
+                        <Card className="border-gray-800 bg-gray-900/50 h-full shadow-xl">
                             <CardHeader className="flex flex-row items-center justify-between p-6 border-b border-gray-800">
                                 <div className="space-y-1">
-                                    <CardTitle className="text-xl text-white">Recent Orders</CardTitle>
+                                    <div className="flex items-center gap-2">
+                                        <Activity className="h-5 w-5 text-pink-400" />
+                                        <CardTitle className="text-xl text-white">Recent Orders</CardTitle>
+                                    </div>
                                     <p className="text-sm text-gray-400">Manage your latest transactions</p>
                                 </div>
                                 <Link href="/admin/orders">
@@ -228,19 +282,25 @@ export default function AdminDashboard() {
                             </CardHeader>
                             <CardContent className="p-0">
                                 {recentOrders.length > 0 ? (
-                                    <div className="divide-y divide-gray-800">
-                                        {recentOrders.map((order) => (
-                                            <div key={order.id} className="p-4 hover:bg-gray-800/50 transition-colors flex items-center justify-between group">
+                                    <div className="divide-y divide-gray-800/80">
+                                        {recentOrders.map((order, idx) => (
+                                            <motion.div
+                                                key={order.id}
+                                                initial={{ opacity: 0, x: -10 }}
+                                                animate={{ opacity: 1, x: 0 }}
+                                                transition={{ delay: idx * 0.05 }}
+                                                className="p-4 hover:bg-gray-800/30 transition-colors flex items-center justify-between group"
+                                            >
                                                 <div className="flex items-center gap-4">
-                                                    <div className="h-10 w-10 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 group-hover:bg-gray-700 group-hover:text-white transition-colors">
+                                                    <div className="h-10 w-10 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 group-hover:bg-gray-700 group-hover:text-white transition-colors ring-1 ring-gray-700/50">
                                                         <ShoppingBagIcon status={order.status} />
                                                     </div>
                                                     <div>
-                                                        <p className="font-medium text-white text-sm">
+                                                        <p className="font-medium text-white text-sm group-hover:text-pink-300 transition-colors">
                                                             {order.userName || order.userEmail || 'Guest User'}
                                                         </p>
                                                         <p className="text-xs text-gray-500 mt-0.5">
-                                                            {formatDate(order.createdAt)} • #{order.id.slice(0, 8)}
+                                                            {formatDate(order.createdAt)} • <span className="font-mono text-gray-600">#{order.id.slice(0, 8)}</span>
                                                         </p>
                                                     </div>
                                                 </div>
@@ -252,12 +312,12 @@ export default function AdminDashboard() {
                                                         <StatusBadge status={order.status} />
                                                     </div>
                                                 </div>
-                                            </div>
+                                            </motion.div>
                                         ))}
                                     </div>
                                 ) : (
                                     <div className="flex flex-col items-center justify-center py-12 text-center">
-                                        <div className="h-16 w-16 bg-gray-800/50 rounded-full flex items-center justify-center mb-4">
+                                        <div className="h-16 w-16 bg-gray-800/50 rounded-full flex items-center justify-center mb-4 ring-1 ring-gray-700/30">
                                             <ShoppingCart className="h-8 w-8 text-gray-600" />
                                         </div>
                                         <h3 className="text-lg font-medium text-white">No orders yet</h3>
@@ -270,51 +330,124 @@ export default function AdminDashboard() {
                         </Card>
                     </motion.div>
 
-                    {/* Quick Stats / Distribution - Takes up 1 column */}
+                    {/* Sidebar — Quick Actions & Insights */}
                     <motion.div variants={itemVariants} className="space-y-6">
                         {/* Quick Actions */}
-                        <Card className="border-gray-800 bg-gray-900/50 shadow-lg">
+                        <Card className="border-gray-800 bg-gray-900/50 shadow-xl">
                             <CardHeader className="border-b border-gray-800 p-6">
-                                <CardTitle className="text-lg text-white">Quick Actions</CardTitle>
+                                <div className="flex items-center gap-2">
+                                    <Zap className="h-5 w-5 text-yellow-400" />
+                                    <CardTitle className="text-lg text-white">Quick Actions</CardTitle>
+                                </div>
                             </CardHeader>
                             <CardContent className="p-4 grid gap-3">
                                 <Link href="/admin/products">
-                                    <div className="flex items-center gap-3 p-3 rounded-lg bg-gray-800/50 hover:bg-gray-800 border border-gray-800 hover:border-gray-700 transition-all cursor-pointer group">
-                                        <div className="h-10 w-10 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-500 group-hover:bg-blue-500/20">
+                                    <div className="flex items-center gap-3 p-3 rounded-xl bg-gray-800/30 hover:bg-gray-800/70 border border-gray-800 hover:border-gray-600 transition-all cursor-pointer group">
+                                        <div className="h-10 w-10 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-400 group-hover:bg-blue-500/20 transition-colors ring-1 ring-blue-500/10">
                                             <Package className="h-5 w-5" />
                                         </div>
                                         <div>
                                             <p className="font-medium text-white text-sm">Manage Products</p>
                                             <p className="text-xs text-gray-400">Add or edit items</p>
                                         </div>
-                                        <ArrowRight className="ml-auto h-4 w-4 text-gray-600 group-hover:text-white" />
+                                        <ArrowRight className="ml-auto h-4 w-4 text-gray-600 group-hover:text-white group-hover:translate-x-0.5 transition-all" />
+                                    </div>
+                                </Link>
+                                <Link href="/admin/orders">
+                                    <div className="flex items-center gap-3 p-3 rounded-xl bg-gray-800/30 hover:bg-gray-800/70 border border-gray-800 hover:border-gray-600 transition-all cursor-pointer group">
+                                        <div className="h-10 w-10 rounded-xl bg-green-500/10 flex items-center justify-center text-green-400 group-hover:bg-green-500/20 transition-colors ring-1 ring-green-500/10">
+                                            <ShoppingCart className="h-5 w-5" />
+                                        </div>
+                                        <div>
+                                            <p className="font-medium text-white text-sm">View Orders</p>
+                                            <p className="text-xs text-gray-400">Check order statuses</p>
+                                        </div>
+                                        <ArrowRight className="ml-auto h-4 w-4 text-gray-600 group-hover:text-white group-hover:translate-x-0.5 transition-all" />
                                     </div>
                                 </Link>
                                 <Link href="/admin/settings">
-                                    <div className="flex items-center gap-3 p-3 rounded-lg bg-gray-800/50 hover:bg-gray-800 border border-gray-800 hover:border-gray-700 transition-all cursor-pointer group">
-                                        <div className="h-10 w-10 rounded-lg bg-purple-500/10 flex items-center justify-center text-purple-500 group-hover:bg-purple-500/20">
+                                    <div className="flex items-center gap-3 p-3 rounded-xl bg-gray-800/30 hover:bg-gray-800/70 border border-gray-800 hover:border-gray-600 transition-all cursor-pointer group">
+                                        <div className="h-10 w-10 rounded-xl bg-purple-500/10 flex items-center justify-center text-purple-400 group-hover:bg-purple-500/20 transition-colors ring-1 ring-purple-500/10">
                                             <CreditCard className="h-5 w-5" />
                                         </div>
                                         <div>
                                             <p className="font-medium text-white text-sm">Platform Settings</p>
                                             <p className="text-xs text-gray-400">Configure store</p>
                                         </div>
-                                        <ArrowRight className="ml-auto h-4 w-4 text-gray-600 group-hover:text-white" />
+                                        <ArrowRight className="ml-auto h-4 w-4 text-gray-600 group-hover:text-white group-hover:translate-x-0.5 transition-all" />
                                     </div>
                                 </Link>
                             </CardContent>
                         </Card>
 
-                        {/* Mini Insight */}
-                        <Card className="border-gray-800 bg-gradient-to-br from-purple-900/20 to-pink-900/20 border-l-4 border-l-pink-500">
-                            <CardContent className="p-6">
-                                <h4 className="text-pink-400 font-semibold mb-2 flex items-center gap-2">
-                                    <TrendingUp className="h-4 w-4" />
-                                    Growth Tip
+                        {/* Growth Insight — Glassmorphism Card */}
+                        <Card className="relative overflow-hidden border-gray-800 bg-gradient-to-br from-purple-900/30 via-pink-900/20 to-gray-900/50 border-l-4 border-l-pink-500 shadow-xl backdrop-blur-sm">
+                            {/* Decorative glow */}
+                            <div className="absolute -top-8 -right-8 h-24 w-24 rounded-full bg-pink-500/15 blur-2xl" />
+                            <CardContent className="relative p-6">
+                                <h4 className="text-pink-400 font-bold mb-3 flex items-center gap-2">
+                                    <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-pink-500/20 ring-1 ring-pink-500/30">
+                                        <Sparkles className="h-4 w-4" />
+                                    </div>
+                                    Boost Your Sales
                                 </h4>
                                 <p className="text-gray-300 text-sm leading-relaxed">
-                                    Adding featured products to your homepage can increase conversion by up to 25%.
+                                    Consider running a flash sale this weekend. Stores that run 48-hour promotions see an average <span className="text-pink-400 font-semibold">25% increase</span> in revenue.
                                 </p>
+                            </CardContent>
+                        </Card>
+
+                        {/* Store Performance Mini Chart */}
+                        <Card className="border-gray-800 bg-gray-900/50 shadow-xl">
+                            <CardContent className="p-6">
+                                <div className="flex items-center gap-2 mb-4">
+                                    <BarChart3 className="h-5 w-5 text-blue-400" />
+                                    <h4 className="text-white font-semibold">Store Performance</h4>
+                                </div>
+                                <div className="space-y-3">
+                                    <div>
+                                        <div className="flex justify-between text-xs mb-1">
+                                            <span className="text-gray-400">Conversion Rate</span>
+                                            <span className="text-white font-medium">68%</span>
+                                        </div>
+                                        <div className="h-2 bg-gray-800 rounded-full overflow-hidden">
+                                            <motion.div
+                                                initial={{ width: 0 }}
+                                                animate={{ width: '68%' }}
+                                                transition={{ duration: 1, delay: 0.5 }}
+                                                className="h-full bg-gradient-to-r from-blue-500 to-cyan-400 rounded-full"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div className="flex justify-between text-xs mb-1">
+                                            <span className="text-gray-400">Customer Satisfaction</span>
+                                            <span className="text-white font-medium">92%</span>
+                                        </div>
+                                        <div className="h-2 bg-gray-800 rounded-full overflow-hidden">
+                                            <motion.div
+                                                initial={{ width: 0 }}
+                                                animate={{ width: '92%' }}
+                                                transition={{ duration: 1, delay: 0.7 }}
+                                                className="h-full bg-gradient-to-r from-green-500 to-emerald-400 rounded-full"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div className="flex justify-between text-xs mb-1">
+                                            <span className="text-gray-400">Order Fulfillment</span>
+                                            <span className="text-white font-medium">85%</span>
+                                        </div>
+                                        <div className="h-2 bg-gray-800 rounded-full overflow-hidden">
+                                            <motion.div
+                                                initial={{ width: 0 }}
+                                                animate={{ width: '85%' }}
+                                                transition={{ duration: 1, delay: 0.9 }}
+                                                className="h-full bg-gradient-to-r from-purple-500 to-pink-400 rounded-full"
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
                             </CardContent>
                         </Card>
                     </motion.div>

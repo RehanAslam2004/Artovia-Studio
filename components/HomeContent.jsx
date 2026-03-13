@@ -158,8 +158,8 @@ export default function HomeContent({ featuredProducts }) {
                         className="text-center max-w-4xl mx-auto"
                     >
                         <motion.div variants={fadeInUp}>
-                            <span className="inline-flex items-center gap-2 rounded-full bg-white/80 backdrop-blur-sm px-4 py-1.5 text-sm font-medium text-pink-600 shadow-sm ring-1 ring-pink-200">
-                                <Sparkles className="h-4 w-4" />
+                            <span className="inline-flex items-center gap-2 rounded-full bg-white/80 backdrop-blur-sm px-5 py-2 text-sm font-semibold text-pink-600 shadow-md ring-1 ring-pink-200/50 hover:shadow-lg transition-shadow">
+                                <Sparkles className="h-4 w-4 text-pink-500 animate-pulse" />
                                 Premium Digital Designs
                             </span>
                         </motion.div>
@@ -187,7 +187,7 @@ export default function HomeContent({ featuredProducts }) {
                             className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4"
                         >
                             <Link href="/shop">
-                                <Button size="lg" className="group h-12 min-w-[180px] text-base bg-gradient-to-r from-pink-400 to-pink-500 hover:from-pink-500 hover:to-pink-600 rounded-full shadow-lg shadow-pink-500/25 border-0">
+                                <Button size="lg" className="group h-12 min-w-[180px] text-base bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 rounded-full shadow-xl shadow-pink-500/30 hover:shadow-pink-500/50 border-0 transition-all duration-300">
                                     Browse Collection
                                     <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
                                 </Button>
@@ -290,11 +290,17 @@ export default function HomeContent({ featuredProducts }) {
                         className="flex flex-col items-center justify-between gap-4 mb-10 sm:flex-row"
                     >
                         <div className="text-center sm:text-left">
+                            <div className="flex items-center justify-center sm:justify-start gap-2 mb-2">
+                                <span className="inline-flex items-center gap-1.5 rounded-full bg-pink-100 px-3 py-1 text-xs font-bold text-pink-600 uppercase tracking-wider">
+                                    <Sparkles className="h-3 w-3" />
+                                    Curated
+                                </span>
+                            </div>
                             <h2 className="text-2xl font-bold text-gray-800 sm:text-3xl">
                                 Featured Designs
                             </h2>
                             <p className="mt-2 text-gray-600">
-                                Our most popular designs
+                                Our most popular and trending designs
                             </p>
                         </div>
                         <Link href="/shop">
@@ -331,8 +337,13 @@ export default function HomeContent({ featuredProducts }) {
             </section>
 
             {/* Features Section */}
-            <section className="py-16 bg-gradient-to-br from-pink-400 to-pink-500 text-white">
-                <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+            <section className="py-16 bg-gradient-to-br from-pink-500 via-rose-500 to-fuchsia-500 text-white relative overflow-hidden">
+                {/* Decorative elements */}
+                <div className="absolute inset-0 pointer-events-none">
+                    <div className="absolute top-0 right-0 h-64 w-64 rounded-full bg-white/10 blur-3xl -translate-y-1/2 translate-x-1/2" />
+                    <div className="absolute bottom-0 left-0 h-48 w-48 rounded-full bg-white/10 blur-3xl translate-y-1/2 -translate-x-1/2" />
+                </div>
+                <div className="container relative mx-auto px-4 sm:px-6 lg:px-8">
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         whileInView={{ opacity: 1, y: 0 }}
@@ -381,23 +392,30 @@ export default function HomeContent({ featuredProducts }) {
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
                         transition={{ duration: 0.5 }}
-                        className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-pink-400 to-pink-500 px-6 py-12 sm:px-12 sm:py-16 text-center"
+                        className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-pink-500 via-rose-500 to-fuchsia-500 px-6 py-12 sm:px-12 sm:py-16 text-center shadow-2xl"
                     >
                         {/* Background decorations */}
-                        <div className="absolute top-0 left-0 h-32 w-32 rounded-full bg-white/10 -translate-x-1/2 -translate-y-1/2" />
-                        <div className="absolute bottom-0 right-0 h-48 w-48 rounded-full bg-white/10 translate-x-1/3 translate-y-1/3" />
+                        <div className="absolute top-0 left-0 h-40 w-40 rounded-full bg-white/10 -translate-x-1/2 -translate-y-1/2 blur-xl" />
+                        <div className="absolute bottom-0 right-0 h-56 w-56 rounded-full bg-white/10 translate-x-1/3 translate-y-1/3 blur-xl" />
+                        <div className="absolute top-1/2 left-1/2 h-32 w-32 rounded-full bg-yellow-200/10 -translate-x-1/2 -translate-y-1/2 blur-2xl" />
 
                         <div className="relative">
-                            <h2 className="text-2xl font-bold text-white sm:text-3xl">
+                            <h2 className="text-2xl font-bold text-white sm:text-4xl">
                                 Ready to Create Something Beautiful?
                             </h2>
-                            <p className="mt-3 text-base text-pink-100 max-w-xl mx-auto">
-                                Browse our collection of premium digital designs.
+                            <p className="mt-4 text-base text-pink-100 max-w-xl mx-auto leading-relaxed">
+                                Browse our collection of premium digital designs and find the perfect one for your special occasion.
                             </p>
-                            <div className="mt-6">
+                            <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
                                 <Link href="/shop">
-                                    <Button size="lg" className="bg-white text-pink-500 hover:bg-pink-50 rounded-full px-8">
+                                    <Button size="lg" className="bg-white text-pink-600 hover:bg-pink-50 rounded-full px-8 shadow-lg shadow-white/20 font-semibold">
                                         Start Shopping
+                                        <ArrowRight className="ml-2 h-4 w-4" />
+                                    </Button>
+                                </Link>
+                                <Link href="/custom-request">
+                                    <Button size="lg" variant="outline" className="border-white/30 text-white hover:bg-white/10 rounded-full px-8">
+                                        Request Custom Design
                                     </Button>
                                 </Link>
                             </div>

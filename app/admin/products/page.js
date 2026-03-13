@@ -207,39 +207,48 @@ export default function AdminProductsPage() {
         setUploadingImage(true);
 
         try {
-            const newImages = [];
+            // Validate all files first
+            const validFiles = [];
+            const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
 
             for (const file of files) {
-                // Validate file type
-                const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
                 if (!validTypes.includes(file.type)) {
                     toast.error({ title: `Skipped invalid file: ${file.name}` });
                     continue;
                 }
-
-                // Validate file size (max 5MB)
                 if (file.size > 5 * 1024 * 1024) {
                     toast.error({ title: `Skipped large file: ${file.name}` });
                     continue;
                 }
+                validFiles.push(file);
+            }
 
+            if (validFiles.length === 0) {
+                setUploadingImage(false);
+                return;
+            }
+
+            // Upload files one-by-one and update state after each
+            let uploadedCount = 0;
+            for (const file of validFiles) {
                 const result = await uploadFile(file, 'products');
                 if (result.success) {
-                    newImages.push(result.url);
+                    uploadedCount++;
+                    // Update state immediately so image appears in gallery
+                    setFormData(prev => {
+                        const updatedImages = [...(prev.images || []), result.url];
+                        return {
+                            ...prev,
+                            images: updatedImages,
+                            imageUrl: updatedImages[0],
+                        };
+                    });
+                    toast.success({ title: `Uploaded ${uploadedCount}/${validFiles.length}: ${file.name}` });
+                } else {
+                    toast.error({ title: `Failed: ${file.name}` });
                 }
             }
 
-            if (newImages.length > 0) {
-                setFormData(prev => {
-                    const updatedImages = [...(prev.images || []), ...newImages];
-                    return {
-                        ...prev,
-                        images: updatedImages,
-                        imageUrl: updatedImages[0] // Primary image is first one
-                    };
-                });
-                toast.success({ title: `${newImages.length} image(s) uploaded!` });
-            }
         } catch (error) {
             console.error('Upload error:', error);
             toast.error({ title: 'Failed to upload images' });

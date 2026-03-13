@@ -9,6 +9,9 @@ import { v2 as cloudinary } from 'cloudinary';
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 
+// Allow up to 60 seconds for uploads
+export const maxDuration = 60;
+
 // ...
 
 // Configure Cloudinary

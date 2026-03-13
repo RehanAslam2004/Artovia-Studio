@@ -55,6 +55,14 @@ const paymentMethods = [
         instructions: 'Scan the QR code below to pay, then enter the Transaction ID.',
         qrCode: '/images/easypaisa-qr.jpeg',
     },
+    {
+        id: 'sadapay',
+        name: 'SadaPay',
+        icon: Building,
+        color: 'bg-purple-500',
+        instructions: 'Send the payment to the IBAN below, then enter the Transaction ID.',
+        iban: 'PK96SADA0000003191946061',
+    },
 ];
 
 export default function CheckoutPage() {
@@ -82,6 +90,17 @@ export default function CheckoutPage() {
     const [rewardTiers, setRewardTiers] = useState([]);
     const [selectedTier, setSelectedTier] = useState(null);
     const [loadingPoints, setLoadingPoints] = useState(false);
+
+    // Copy to clipboard handler
+    const handleCopy = async (text, field) => {
+        try {
+            await navigator.clipboard.writeText(text);
+            setCopiedField(field);
+            setTimeout(() => setCopiedField(null), 2000);
+        } catch (err) {
+            console.error('Copy failed:', err);
+        }
+    };
 
     // Load Firestore for guest sync
     const syncGuestCart = async (email) => {
@@ -548,6 +567,30 @@ export default function CheckoutPage() {
                                                     <p className="text-xs font-bold text-pink-600 uppercase tracking-wide">
                                                         Scan to Pay
                                                     </p>
+                                                </div>
+                                            )}
+
+                                            {/* IBAN Section */}
+                                            {selectedMethod.iban && (
+                                                <div className="mb-4 rounded-lg bg-white border border-pink-200 p-4">
+                                                    <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">IBAN Number</p>
+                                                    <div className="flex items-center gap-2">
+                                                        <code className="flex-1 bg-gray-50 px-3 py-2 rounded-md text-sm font-mono font-semibold text-gray-800 tracking-wider border border-gray-100">
+                                                            {selectedMethod.iban}
+                                                        </code>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => handleCopy(selectedMethod.iban, 'iban')}
+                                                            className="flex items-center gap-1 rounded-md bg-pink-500 px-3 py-2 text-xs font-medium text-white hover:bg-pink-600 transition-colors"
+                                                        >
+                                                            {copiedField === 'iban' ? (
+                                                                <><Check className="h-3.5 w-3.5" /> Copied!</>
+                                                            ) : (
+                                                                <><Copy className="h-3.5 w-3.5" /> Copy</>
+                                                            )}
+                                                        </button>
+                                                    </div>
+                                                    <p className="text-xs text-gray-500 mt-2">Account: Artovia Studio — SadaPay</p>
                                                 </div>
                                             )}
                                         </motion.div>
