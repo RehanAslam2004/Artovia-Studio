@@ -365,6 +365,18 @@ export default function AdminDashboard() {
                                         <ArrowRight className="ml-auto h-4 w-4 text-gray-600 group-hover:text-white group-hover:translate-x-0.5 transition-all" />
                                     </div>
                                 </Link>
+                                <Link href="/admin/requests">
+                                    <div className="flex items-center gap-3 p-3 rounded-xl bg-gray-800/30 hover:bg-gray-800/70 border border-gray-800 hover:border-gray-600 transition-all cursor-pointer group">
+                                        <div className="h-10 w-10 rounded-xl bg-pink-500/10 flex items-center justify-center text-pink-400 group-hover:bg-pink-500/20 transition-colors ring-1 ring-pink-500/10">
+                                            <MessageSquare className="h-5 w-5" />
+                                        </div>
+                                        <div>
+                                            <p className="font-medium text-white text-sm">Custom Requests</p>
+                                            <p className="text-xs text-gray-400">Review bespoke projects</p>
+                                        </div>
+                                        <ArrowRight className="ml-auto h-4 w-4 text-gray-600 group-hover:text-white group-hover:translate-x-0.5 transition-all" />
+                                    </div>
+                                </Link>
                                 <Link href="/admin/settings">
                                     <div className="flex items-center gap-3 p-3 rounded-xl bg-gray-800/30 hover:bg-gray-800/70 border border-gray-800 hover:border-gray-600 transition-all cursor-pointer group">
                                         <div className="h-10 w-10 rounded-xl bg-purple-500/10 flex items-center justify-center text-purple-400 group-hover:bg-purple-500/20 transition-colors ring-1 ring-purple-500/10">

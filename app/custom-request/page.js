@@ -83,11 +83,24 @@ export default function CustomRequestPage() {
                 throw new Error('Service is temporarily unavailable. Please try again later.');
             }
 
-            await addDoc(collection(db, 'custom_requests'), {
+            const docRef = await addDoc(collection(db, 'custom_requests'), {
                 ...formData,
                 status: 'pending',
                 createdAt: serverTimestamp(),
             });
+
+            // Send notification emails (Non-blocking)
+            fetch('/api/send-email', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    type: 'custom_request',
+                    request: { 
+                        ...formData, 
+                        id: docRef.id 
+                    }
+                })
+            }).catch(err => console.error('Email send error (background):', err));
 
             setIsSuccess(true);
             toast.success({ title: 'Request submitted successfully!' });

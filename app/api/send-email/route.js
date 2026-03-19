@@ -9,7 +9,9 @@ import {
     sendOrderConfirmationEmail,
     sendOrderApprovalEmail,
     sendAdminOrderNotification,
-    sendWelcomeEmail
+    sendWelcomeEmail,
+    sendCustomRequestNotification,
+    sendCustomQuoteEmail
 } from '@/lib/email';
 
 export async function POST(request) {
@@ -28,7 +30,7 @@ export async function POST(request) {
         }
 
         // Validate required fields based on type
-        if (type !== 'welcome' && !order) {
+        if (type !== 'welcome' && type !== 'custom_request' && type !== 'custom_quote' && !order) {
             console.error('❌ Missing order data for type:', type);
             return NextResponse.json(
                 { error: 'Missing order data' },
@@ -64,6 +66,26 @@ export async function POST(request) {
             case 'admin_notification':
                 // Send notification to admin only
                 result = await sendAdminOrderNotification(order);
+                break;
+            
+            case 'custom_request':
+                // Send notification to admin + confirmation to customer
+                console.log('📧 Sending custom request notification for:', body.request?.email);
+                if (body.request) {
+                    result = await sendCustomRequestNotification(body.request);
+                } else {
+                    result = { success: false, error: 'Missing request data for custom request email' };
+                }
+                break;
+
+            case 'custom_quote':
+                // Send quote with price to customer
+                console.log('📧 Sending custom quote to:', body.request?.email, 'Price:', body.price);
+                if (body.request && body.price) {
+                    result = await sendCustomQuoteEmail(body.request, body.price);
+                } else {
+                    result = { success: false, error: 'Missing request data or price for custom quote email' };
+                }
                 break;
 
             default:
