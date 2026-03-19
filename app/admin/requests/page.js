@@ -9,8 +9,10 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { motion } from 'framer-motion';
+// Forced refresh to resolve ReferenceError: motion is not defined
 import { 
-    MessageSquare, 
+    MessageCircle, 
     User, 
     Mail, 
     Clock, 
@@ -25,11 +27,13 @@ import {
     Image as ImageIcon,
     DollarSign,
     Filter,
-    ArrowLeft
+    ArrowLeft,
+    Sparkles
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
+import { Label } from '@/components/ui/Label';
 import { Badge } from '@/components/ui/Badge';
 import { toast } from '@/hooks/useToast';
 import AdminLayout from '../AdminLayout';
@@ -220,7 +224,7 @@ export default function CustomRequestsAdmin() {
 
                                                 <div className="bg-gray-950/50 p-4 rounded-xl border border-gray-800/50">
                                                     <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-pink-500 mb-2">
-                                                        <MessageSquare className="h-3 w-3" /> Project Description
+                                                        <MessageCircle className="h-3 w-3" /> Project Description
                                                     </div>
                                                     <p className="text-gray-300 text-sm whitespace-pre-wrap leading-relaxed">{req.details}</p>
                                                 </div>
@@ -240,26 +244,36 @@ export default function CustomRequestsAdmin() {
 
                                             {/* Reference Image Section */}
                                             <div className="lg:w-48 xl:w-64 space-y-4 flex flex-col">
-                                                <div className="flex-1 rounded-xl bg-gray-950 border border-gray-800 overflow-hidden relative group aspect-square lg:aspect-auto">
-                                                    {req.referenceImage ? (
-                                                        <>
-                                                            <img 
-                                                                src={req.referenceImage} 
-                                                                alt="Reference" 
-                                                                className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
-                                                            />
-                                                            <a 
-                                                                href={req.referenceImage} 
-                                                                target="_blank" 
-                                                                className="absolute inset-0 flex items-center justify-center bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity"
-                                                            >
-                                                                <Eye className="h-6 w-6 text-white" />
-                                                            </a>
-                                                        </>
+                                                <div className="flex-1 rounded-xl bg-gray-950 border border-gray-800 overflow-hidden relative group min-h-[200px]">
+                                                    {(req.referenceImages?.length > 0 || req.referenceImage) ? (
+                                                        <div className="grid grid-cols-2 gap-1 h-full w-full">
+                                                            {/* Support for new array structure */}
+                                                            {req.referenceImages?.map((imgUrl, idx) => (
+                                                                <div key={idx} className={`relative overflow-hidden ${req.referenceImages.length === 1 ? 'col-span-2 row-span-2' : ''}`}>
+                                                                    <img 
+                                                                        src={imgUrl} 
+                                                                        alt={`Reference ${idx + 1}`} 
+                                                                        className="w-full h-full object-cover opacity-80 hover:opacity-100 transition-opacity cursor-pointer"
+                                                                        onClick={() => window.open(imgUrl, '_blank')}
+                                                                    />
+                                                                </div>
+                                                            ))}
+                                                            {/* Backward compatibility for old string structure (only if array is empty) */}
+                                                            {(!req.referenceImages || req.referenceImages.length === 0) && req.referenceImage && (
+                                                                <div className="col-span-2 row-span-2 relative overflow-hidden">
+                                                                    <img 
+                                                                        src={req.referenceImage} 
+                                                                        alt="Reference" 
+                                                                        className="w-full h-full object-cover opacity-80 hover:opacity-100 transition-opacity cursor-pointer"
+                                                                        onClick={() => window.open(req.referenceImage, '_blank')}
+                                                                    />
+                                                                </div>
+                                                            )}
+                                                        </div>
                                                     ) : (
-                                                        <div className="w-full h-full flex flex-col items-center justify-center text-gray-700 bg-gray-900/20">
+                                                        <div className="w-full h-full flex flex-col items-center justify-center text-gray-700 bg-gray-900/20 py-10">
                                                             <ImageIcon className="h-10 w-10 mb-2 opacity-20" />
-                                                            <span className="text-xs">No reference image</span>
+                                                            <span className="text-xs">No reference images</span>
                                                         </div>
                                                     )}
                                                 </div>
@@ -302,7 +316,7 @@ export default function CustomRequestsAdmin() {
                     ) : (
                         <div className="py-20 text-center border-2 border-dashed border-gray-800 rounded-3xl">
                             <div className="h-16 w-16 bg-gray-900 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <MessageSquare className="h-8 w-8 text-gray-700" />
+                                <MessageCircle className="h-8 w-8 text-gray-700" />
                             </div>
                             <h3 className="text-white font-bold text-lg">No requests found</h3>
                             <p className="text-gray-500 max-w-sm mx-auto mt-2">Try adjusting your search or filters to find what you&apos;re looking for.</p>

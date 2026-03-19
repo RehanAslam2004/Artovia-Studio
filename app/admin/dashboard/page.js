@@ -29,7 +29,8 @@ import {
     Sparkles,
     Activity,
     BarChart3,
-    Zap
+    Zap,
+    MessageCircle
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
@@ -368,7 +369,7 @@ export default function AdminDashboard() {
                                 <Link href="/admin/requests">
                                     <div className="flex items-center gap-3 p-3 rounded-xl bg-gray-800/30 hover:bg-gray-800/70 border border-gray-800 hover:border-gray-600 transition-all cursor-pointer group">
                                         <div className="h-10 w-10 rounded-xl bg-pink-500/10 flex items-center justify-center text-pink-400 group-hover:bg-pink-500/20 transition-colors ring-1 ring-pink-500/10">
-                                            <MessageSquare className="h-5 w-5" />
+                                            <MessageCircle className="h-5 w-5" />
                                         </div>
                                         <div>
                                             <p className="font-medium text-white text-sm">Custom Requests</p>

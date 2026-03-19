@@ -20,7 +20,7 @@ export default function CustomRequestPage() {
         email: '',
         type: 'custom-design', // 'custom-design' or 'customize-bundle'
         details: '',
-        referenceImage: null,
+        referenceImages: [],
     });
 
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -35,36 +35,48 @@ export default function CustomRequestPage() {
 
     // Handle Image Upload
     const handleImageUpload = async (e) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
+        const files = Array.from(e.target.files || []);
+        if (files.length === 0) return;
 
-        // Validations
-        if (file.size > 5 * 1024 * 1024) {
-            toast.error({ title: 'File too large (Max 5MB)' });
+        // Limit to 5 images total
+        if (formData.referenceImages.length + files.length > 5) {
+            toast.error({ title: 'Maximum 5 images allowed' });
             return;
         }
 
         setUploadingImage(true);
         try {
-            const result = await uploadFile(file, 'requests');
-            if (result.success) {
-                setFormData(prev => ({ ...prev, referenceImage: result.url }));
-                toast.success({ title: 'Reference image uploaded!' });
-            } else {
-                throw new Error(result.error);
-            }
+            const uploadPromises = files.map(async (file) => {
+                // Validations
+                if (file.size > 5 * 1024 * 1024) {
+                    throw new Error(`File ${file.name} too large (Max 5MB)`);
+                }
+                const result = await uploadFile(file, 'requests');
+                if (!result.success) throw new Error(result.error);
+                return result.url;
+            });
+
+            const urls = await Promise.all(uploadPromises);
+            setFormData(prev => ({ 
+                ...prev, 
+                referenceImages: [...prev.referenceImages, ...urls] 
+            }));
+            toast.success({ title: `${urls.length} reference image(s) uploaded!` });
         } catch (error) {
             console.error('Upload error:', error);
-            toast.error({ title: 'Failed to upload image' });
+            toast.error({ title: 'Failed to upload image(s)', description: error.message });
         } finally {
             setUploadingImage(false);
+            if (fileInputRef.current) fileInputRef.current.value = '';
         }
     };
 
     // Remove Image
-    const handleRemoveImage = () => {
-        setFormData(prev => ({ ...prev, referenceImage: null }));
-        if (fileInputRef.current) fileInputRef.current.value = '';
+    const handleRemoveImage = (indexToRemove) => {
+        setFormData(prev => ({ 
+            ...prev, 
+            referenceImages: prev.referenceImages.filter((_, index) => index !== indexToRemove)
+        }));
     };
 
     // Handle Submit
@@ -111,7 +123,7 @@ export default function CustomRequestPage() {
                 email: '',
                 type: 'custom-design',
                 details: '',
-                referenceImage: null,
+                referenceImages: [],
             });
         } catch (error) {
             console.error('Submission error:', error);
@@ -233,31 +245,32 @@ export default function CustomRequestPage() {
                             />
                         </div>
 
-                        {/* Reference Image */}
+                        {/* Reference Images */}
                         <div>
-                            <Label>Reference Image (Optional)</Label>
-                            <div className="mt-2">
-                                {formData.referenceImage ? (
-                                    <div className="relative rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-2 flex items-center gap-3">
-                                        <div className="h-16 w-16 relative rounded overflow-hidden flex-shrink-0">
-                                            <img
-                                                src={formData.referenceImage}
-                                                alt="Reference"
-                                                className="object-cover w-full h-full"
-                                            />
-                                        </div>
-                                        <div className="flex-1 text-sm text-gray-600 dark:text-gray-300 truncate">
-                                            Reference Image Uploaded
-                                        </div>
-                                        <button
-                                            type="button"
-                                            onClick={handleRemoveImage}
-                                            className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full transition-colors"
-                                        >
-                                            <X className="h-5 w-5 text-gray-500" />
-                                        </button>
+                            <Label>Reference Images (Max 5, Optional)</Label>
+                            <div className="mt-2 space-y-3">
+                                {formData.referenceImages.length > 0 && (
+                                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4">
+                                        {formData.referenceImages.map((imgUrl, index) => (
+                                            <div key={index} className="relative aspect-square rounded-xl overflow-hidden border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-800 group">
+                                                <img
+                                                    src={imgUrl}
+                                                    alt={`Reference ${index + 1}`}
+                                                    className="object-cover w-full h-full"
+                                                />
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleRemoveImage(index)}
+                                                    className="absolute top-1.5 right-1.5 p-1 bg-black/50 hover:bg-red-500 text-white rounded-full transition-all opacity-0 group-hover:opacity-100"
+                                                >
+                                                    <X className="h-3.5 w-3.5" />
+                                                </button>
+                                            </div>
+                                        ))}
                                     </div>
-                                ) : (
+                                )}
+                                
+                                {formData.referenceImages.length < 5 && (
                                     <button
                                         type="button"
                                         onClick={() => fileInputRef.current?.click()}
@@ -269,7 +282,9 @@ export default function CustomRequestPage() {
                                         ) : (
                                             <>
                                                 <Upload className="h-8 w-8 mb-2 text-gray-400" />
-                                                <span className="text-sm font-medium">Upload Reference Image</span>
+                                                <span className="text-sm font-medium">
+                                                    {formData.referenceImages.length > 0 ? 'Add More Images' : 'Upload Reference Images'}
+                                                </span>
                                                 <span className="text-xs mt-1">PNG, JPG, WEBP up to 5MB</span>
                                             </>
                                         )}
@@ -279,6 +294,7 @@ export default function CustomRequestPage() {
                                     ref={fileInputRef}
                                     type="file"
                                     accept="image/*"
+                                    multiple
                                     onChange={handleImageUpload}
                                     className="hidden"
                                 />

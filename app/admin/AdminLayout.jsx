@@ -20,7 +20,7 @@ import {
     X,
     Home,
     BarChart2,
-    MessageSquare,
+    MessageCircle,
     Star,
     Gift
 } from 'lucide-react';
@@ -33,10 +33,10 @@ const navItems = [
     { href: '/admin/analytics', label: 'Analytics', icon: BarChart2 },
     { href: '/admin/products', label: 'Products', icon: Package },
     { href: '/admin/orders', label: 'Orders', icon: ShoppingCart },
-    { href: '/admin/requests', label: 'Custom Requests', icon: MessageSquare },
+    { href: '/admin/requests', label: 'Custom Requests', icon: MessageCircle },
     { href: '/admin/points', label: 'Points', icon: Star },
     { href: '/admin/rewards', label: 'Rewards', icon: Gift },
-    { href: '/admin/reviews', label: 'Reviews', icon: MessageSquare },
+    { href: '/admin/reviews', label: 'Reviews', icon: MessageCircle },
     { href: '/admin/settings', label: 'Settings', icon: Settings },
 ];
 

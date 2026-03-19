@@ -10,7 +10,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import {
-    MessageSquare,
+    MessageCircle,
     Check,
     X,
     Trash2,
@@ -170,7 +170,7 @@ export default function AdminReviewsPage() {
                 <div className="space-y-4">
                     {filteredReviews.length === 0 ? (
                         <div className="text-center py-12 bg-gray-900/30 rounded-xl border border-gray-800">
-                            <MessageSquare className="h-12 w-12 text-gray-700 mx-auto mb-4" />
+                            <MessageCircle className="h-12 w-12 text-gray-700 mx-auto mb-4" />
                             <h3 className="text-lg font-medium text-white">No reviews found</h3>
                             <p className="text-gray-500 mt-1">No reviews match the current filter.</p>
                         </div>
