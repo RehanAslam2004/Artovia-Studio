@@ -69,6 +69,12 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    // Custom Requests: Public create (form is public), Admin read/manage
+    match /custom_requests/{requestId} {
+      allow create: if true;
+      allow read, update, delete: if isAdmin();
+    }
+
     // Settings (rewards config, etc): Public read, Admin write
     match /settings/{settingId} {
       allow read: if true;

@@ -36,6 +36,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/hooks/useToast';
 import { createOrder } from '@/lib/orders';
 import { formatPrice, isValidEmail, isValidPakistaniPhone } from '@/lib/utils';
+import PointsCelebration from '@/components/PointsCelebration';
 
 const paymentMethods = [
     {
@@ -84,6 +85,8 @@ export default function CheckoutPage() {
     const [orderPlaced, setOrderPlaced] = useState(false);
     const [orderId, setOrderId] = useState(null);
     const [copiedField, setCopiedField] = useState(null);
+    const [showPointsCelebration, setShowPointsCelebration] = useState(false);
+    const [purchasePointsEarned, setPurchasePointsEarned] = useState(0);
 
     // Loyalty Points State
     const [userPoints, setUserPoints] = useState(0);
@@ -270,6 +273,13 @@ export default function CheckoutPage() {
                 setOrderPlaced(true);
                 clearCart();
                 toast.success({ title: 'Order placed successfully!' });
+
+                // Show points celebration for authenticated users
+                if (isAuthenticated && user?.uid) {
+                    const earnedPoints = (orderData.items?.length || 0) * 50;
+                    setPurchasePointsEarned(earnedPoints);
+                    setShowPointsCelebration(true);
+                }
             } else {
                 throw new Error(result.error || 'Failed to place order');
             }
@@ -338,6 +348,16 @@ export default function CheckoutPage() {
     if (orderPlaced) {
         return (
             <div className="min-h-screen bg-pink-50/30">
+                {/* Points Celebration Popup */}
+                {isAuthenticated && (
+                    <PointsCelebration
+                        isOpen={showPointsCelebration}
+                        onClose={() => setShowPointsCelebration(false)}
+                        pointsEarned={purchasePointsEarned}
+                        newBalance={userPoints + purchasePointsEarned}
+                        reason="purchase"
+                    />
+                )}
                 <div className="container mx-auto px-4 py-16 sm:px-6 lg:px-8">
                     <motion.div
                         initial={{ opacity: 0, scale: 0.95 }}

@@ -19,7 +19,8 @@ import {
     XCircle,
     Eye,
     Mail,
-    ChevronDown
+    ChevronDown,
+    Sparkles
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
@@ -171,6 +172,19 @@ export default function OrdersPage() {
                                                 </p>
                                             </div>
                                         </div>
+
+                                        {/* Points Earned Banner */}
+                                        {(order.status === 'approved' || order.status === 'completed') && order.pointsEarned > 0 && (
+                                            <div className="mt-3 flex items-center gap-2 bg-gradient-to-r from-pink-50 to-purple-50 dark:from-pink-900/20 dark:to-purple-900/20 rounded-xl px-4 py-2.5 border border-pink-200/50 dark:border-pink-800/30">
+                                                <div className="h-8 w-8 rounded-lg bg-pink-100 dark:bg-pink-900/30 flex items-center justify-center flex-shrink-0">
+                                                    <Sparkles className="h-4 w-4 text-pink-500" />
+                                                </div>
+                                                <p className="text-sm">
+                                                    <span className="font-bold text-pink-600 dark:text-pink-400">+{order.pointsEarned} points</span>
+                                                    <span className="text-gray-600 dark:text-gray-400"> earned from this order!</span>
+                                                </p>
+                                            </div>
+                                        )}
 
                                         {/* Order Items Preview */}
                                         <div className="mt-4 flex flex-wrap gap-2">

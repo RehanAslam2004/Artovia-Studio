@@ -19,6 +19,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/hooks/useToast';
 import { signUpCustomer } from '@/lib/auth';
 import { isValidEmail } from '@/lib/utils';
+import PointsCelebration from '@/components/PointsCelebration';
 
 // Password requirements
 const passwordRequirements = [
@@ -41,6 +42,7 @@ export default function RegisterPage() {
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [acceptTerms, setAcceptTerms] = useState(false);
+    const [showPointsCelebration, setShowPointsCelebration] = useState(false);
 
     // If already logged in, show message instead of form
     // (handled in render)
@@ -107,7 +109,8 @@ export default function RegisterPage() {
                     title: 'Account created!',
                     description: 'Welcome to Artovia Studio!'
                 });
-                router.push('/account');
+                // Show points celebration before redirecting
+                setShowPointsCelebration(true);
             } else {
                 throw new Error(result.error || 'Failed to create account');
             }
@@ -139,6 +142,17 @@ export default function RegisterPage() {
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 via-white to-pink-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 py-12 px-4">
+            {/* Points Celebration Popup */}
+            <PointsCelebration
+                isOpen={showPointsCelebration}
+                onClose={() => {
+                    setShowPointsCelebration(false);
+                    router.push('/account');
+                }}
+                pointsEarned={100}
+                newBalance={100}
+                reason="signup"
+            />
             {/* Background decorations */}
             <div className="absolute inset-0 overflow-hidden pointer-events-none">
                 <div className="absolute -top-40 -right-40 h-80 w-80 rounded-full bg-purple-500/10 blur-3xl" />

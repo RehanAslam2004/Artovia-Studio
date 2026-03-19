@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/Input';
 import { Label } from '@/components/ui/Label';
 import { toast } from '@/hooks/useToast';
 import { uploadFile } from '@/lib/products'; // Reusing upload logic
-import { db } from '@/lib/firebase';
+import { db, isFirebaseConfigured } from '@/lib/firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 
 export default function CustomRequestPage() {
@@ -79,6 +79,10 @@ export default function CustomRequestPage() {
         setIsSubmitting(true);
 
         try {
+            if (!isFirebaseConfigured || !db) {
+                throw new Error('Service is temporarily unavailable. Please try again later.');
+            }
+
             await addDoc(collection(db, 'custom_requests'), {
                 ...formData,
                 status: 'pending',
@@ -98,7 +102,7 @@ export default function CustomRequestPage() {
             });
         } catch (error) {
             console.error('Submission error:', error);
-            toast.error({ title: 'Failed to submit request. Please try again.' });
+            toast.error({ title: error.message || 'Failed to submit request. Please try again.' });
         } finally {
             setIsSubmitting(false);
         }
