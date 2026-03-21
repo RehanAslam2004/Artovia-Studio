@@ -10,11 +10,11 @@ import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
-import { ShoppingCart, Eye } from 'lucide-react';
+import { ShoppingCart, Eye, Tag } from 'lucide-react';
 import { useCart } from '@/hooks/useCart';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
-import { formatPrice, cn } from '@/lib/utils';
+import { formatPrice, getDiscountPercent, cn } from '@/lib/utils';
 import { toast } from '@/hooks/useToast';
 
 /**
@@ -29,10 +29,26 @@ export default function ProductCard({ product, className, priority = false }) {
     const { addToCart, isInCart } = useCart();
 
     const handleAddToCart = (e) => {
-        // ...
+        e.preventDefault();
+        e.stopPropagation();
+        
+        // TEMPORARY: Pass the discounted price to the cart
+        const cartProduct = { ...product, price: salePrice };
+        addToCart(cartProduct);
+        
+        toast.success({
+            title: 'Added to Cart!',
+            description: `${product.name} has been added to your cart.`,
+        });
     };
 
     const inCart = isInCart(product.id);
+
+    // TEMPORARY: Auto-apply 30% Eid discount on all products
+    // Remove these lines when using real compareAtPrice from admin
+    const originalPrice = product.price;
+    const salePrice = Math.round(product.price * 0.7);
+    const discount = 30; // Force 30% display entirely
 
     // Placeholder image if product image fails to load
     const productImage = imageError || !(product.imageUrl || product.images?.[0])
@@ -93,10 +109,22 @@ export default function ProductCard({ product, className, priority = false }) {
                     )}
 
                     {/* Featured Badge */}
-                    {product.featured && (
+                    {product.featured && !discount && (
                         <div className="absolute left-2 top-2">
                             <Badge variant="default" className="bg-pink-500 text-white border-0 text-xs">
                                 Featured
+                            </Badge>
+                        </div>
+                    )}
+
+                    {/* EID SALE Badge */}
+                    {discount && (
+                        <div className="absolute left-2 top-2 z-20 flex flex-col gap-1">
+                            <Badge className="bg-gradient-to-r from-yellow-500 to-amber-500 text-white border-0 text-xs font-bold shadow-lg shadow-yellow-500/30 px-2">
+                                🌙 EID SALE
+                            </Badge>
+                            <Badge className="bg-red-500 text-white border-0 text-[10px] font-bold px-1.5">
+                                -{discount}% OFF
                             </Badge>
                         </div>
                     )}
@@ -144,9 +172,16 @@ export default function ProductCard({ product, className, priority = false }) {
 
                     {/* Price and Add Button */}
                     <div className="flex items-center justify-between">
-                        <span className="text-base font-bold text-pink-500">
-                            {formatPrice(product.price)}
-                        </span>
+                        <div className="flex items-center gap-1.5">
+                            <span className="text-base font-bold text-pink-500">
+                                {formatPrice(salePrice)}
+                            </span>
+                            {discount && (
+                                <span className="text-xs text-gray-400 line-through">
+                                    {formatPrice(originalPrice)}
+                                </span>
+                            )}
+                        </div>
 
                         {/* Mobile Add to Cart Button */}
                         <Button
@@ -175,10 +210,22 @@ export function ProductCardHorizontal({ product, className }) {
     const [imageError, setImageError] = useState(false);
     const { addToCart, isInCart } = useCart();
 
-    const handleAddToCart = () => {
-        addToCart(product);
+    // TEMPORARY: Auto-apply 30% Eid discount on all products
+    // Remove these lines when using real compareAtPrice from admin
+    const originalPrice = product.price;
+    const salePrice = Math.round(product.price * 0.7);
+    const discount = 30; // Force 30% completely
+
+    const handleAddToCart = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        // TEMPORARY: Pass the discounted price to the cart
+        const cartProduct = { ...product, price: salePrice };
+        addToCart(cartProduct);
+        
         toast.success({
-            title: 'Added to Cart',
+            title: 'Added to Cart!',
             description: `${product.name} has been added to your cart.`,
         });
     };

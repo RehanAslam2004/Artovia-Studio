@@ -59,6 +59,7 @@ const initialFormState = {
     name: '',
     description: '',
     price: '',
+    compareAtPrice: '',
     category: 'wedding-cards',
     imageUrl: '',
     images: [], // Multiple images support
@@ -167,6 +168,7 @@ export default function AdminProductsPage() {
             name: product.name || '',
             description: product.description || '',
             price: product.price?.toString() || '',
+            compareAtPrice: product.compareAtPrice?.toString() || '',
             category: product.category || 'canva-templates',
             imageUrl: product.imageUrl || '',
             images: product.images || (product.imageUrl ? [product.imageUrl] : []),
@@ -306,6 +308,7 @@ export default function AdminProductsPage() {
                 name: formData.name.trim(),
                 description: formData.description.trim(),
                 price: parseFloat(formData.price),
+                compareAtPrice: formData.compareAtPrice ? parseFloat(formData.compareAtPrice) : null,
                 category: formData.category,
                 imageUrl: formData.imageUrl, // Kept for backward compatibility
                 images: formData.images, // New array
@@ -474,7 +477,17 @@ export default function AdminProductsPage() {
                                     <p className="text-sm text-gray-400 capitalize">{product.category?.replace(/-/g, ' ')}</p>
                                     <p className="mt-2 text-lg font-bold text-purple-400">
                                         {formatPrice(product.price)}
+                                        {product.compareAtPrice && product.compareAtPrice > product.price && (
+                                            <span className="ml-2 text-sm text-gray-500 line-through font-normal">
+                                                {formatPrice(product.compareAtPrice)}
+                                            </span>
+                                        )}
                                     </p>
+                                    {product.compareAtPrice && product.compareAtPrice > product.price && (
+                                        <span className="inline-flex items-center mt-1 text-xs font-bold text-yellow-400 bg-yellow-400/10 px-2 py-0.5 rounded-full">
+                                            🌙 Eid Sale: {Math.round(((product.compareAtPrice - product.price) / product.compareAtPrice) * 100)}% OFF
+                                        </span>
+                                    )}
 
                                     {/* Actions */}
                                     <div className="mt-4 flex gap-2">
@@ -644,7 +657,7 @@ export default function AdminProductsPage() {
                                 {/* Price & Category Row */}
                                 <div className="grid gap-4 sm:grid-cols-2">
                                     <div>
-                                        <Label htmlFor="price" className="text-gray-300">Price (PKR) *</Label>
+                                        <Label htmlFor="price" className="text-gray-300">Sale Price (PKR) *</Label>
                                         <Input
                                             id="price"
                                             name="price"
@@ -657,21 +670,43 @@ export default function AdminProductsPage() {
                                         />
                                     </div>
                                     <div>
-                                        <Label htmlFor="category" className="text-gray-300">Category</Label>
-                                        <select
-                                            id="category"
-                                            name="category"
-                                            value={formData.category}
+                                        <Label htmlFor="compareAtPrice" className="text-gray-300">
+                                            Compare at Price (PKR)
+                                            <span className="text-xs text-yellow-400 ml-1">Eid Sale</span>
+                                        </Label>
+                                        <Input
+                                            id="compareAtPrice"
+                                            name="compareAtPrice"
+                                            type="number"
+                                            value={formData.compareAtPrice}
                                             onChange={handleInputChange}
-                                            className="mt-1 w-full rounded-lg border border-gray-700 bg-gray-800 px-4 py-2 text-white focus:border-purple-500 focus:outline-none"
-                                        >
-                                            {categories.map(cat => (
-                                                <option key={cat} value={cat} className="capitalize">
-                                                    {cat.replace(/-/g, ' ')}
-                                                </option>
-                                            ))}
-                                        </select>
+                                            placeholder="Original price (leave empty if no sale)"
+                                            className="mt-1 bg-gray-800 border-gray-700 text-white"
+                                        />
+                                        {formData.compareAtPrice && formData.price && Number(formData.compareAtPrice) > Number(formData.price) && (
+                                            <p className="mt-1 text-xs text-yellow-400">
+                                                🌙 {Math.round(((Number(formData.compareAtPrice) - Number(formData.price)) / Number(formData.compareAtPrice)) * 100)}% discount will be shown
+                                            </p>
+                                        )}
                                     </div>
+                                </div>
+
+                                {/* Category */}
+                                <div>
+                                    <Label htmlFor="category" className="text-gray-300">Category</Label>
+                                    <select
+                                        id="category"
+                                        name="category"
+                                        value={formData.category}
+                                        onChange={handleInputChange}
+                                        className="mt-1 w-full rounded-lg border border-gray-700 bg-gray-800 px-4 py-2 text-white focus:border-purple-500 focus:outline-none"
+                                    >
+                                        {categories.map(cat => (
+                                            <option key={cat} value={cat} className="capitalize">
+                                                {cat.replace(/-/g, ' ')}
+                                            </option>
+                                        ))}
+                                    </select>
                                 </div>
 
                                 {/* Featured Toggle */}

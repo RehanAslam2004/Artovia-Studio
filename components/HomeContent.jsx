@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import ProductCard from '@/components/ProductCard';
+import EidBanner from '@/components/EidBanner';
 
 // Categories data
 // Categories data with Glassmorphic Gradient styles
@@ -104,6 +105,9 @@ const staggerContainer = {
 export default function HomeContent({ featuredProducts }) {
     return (
         <div className="overflow-hidden">
+            {/* Eid Mubarak Banner */}
+            <EidBanner />
+
             {/* Hero Section - Centered */}
             <section className="relative min-h-[60vh] sm:min-h-[75vh] flex items-center justify-center hero-pattern overflow-hidden">
                 {/* Animated Background Decorations */}
