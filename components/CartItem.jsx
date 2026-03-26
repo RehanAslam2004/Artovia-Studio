@@ -188,9 +188,11 @@ export function CartItemCompact({ item, className }) {
  * CartSummary - Order summary component
  */
 export function CartSummary({ className }) {
-    const { cart, getSubtotal, getTotal, getItemCount } = useCart();
+    const { cart, getSubtotal, getOriginalSubtotal, getTotal, getItemCount } = useCart();
 
     const subtotal = getSubtotal();
+    const originalSubtotal = getOriginalSubtotal();
+    const productDiscount = originalSubtotal - subtotal;
     const total = getTotal();
     const itemCount = getItemCount();
 
@@ -206,23 +208,47 @@ export function CartSummary({ className }) {
             </h3>
 
             <div className="space-y-3 border-b border-gray-200 pb-4 dark:border-gray-700">
-                <div className="flex justify-between text-sm">
-                    <span className="text-gray-600 dark:text-gray-400">
-                        Items ({itemCount})
-                    </span>
-                    <span className="text-gray-900 dark:text-gray-100">
-                        {formatPrice(subtotal)}
-                    </span>
-                </div>
+                {productDiscount > 0 ? (
+                    <>
+                        <div className="flex justify-between text-sm">
+                            <span className="text-gray-600 dark:text-gray-400">
+                                Items ({itemCount})
+                            </span>
+                            <span className="text-gray-500 line-through">
+                                {formatPrice(originalSubtotal)}
+                            </span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                            <span className="text-gray-600 dark:text-gray-400">
+                                Product Discounts
+                            </span>
+                            <span className="text-pink-500 font-medium">
+                                -{formatPrice(productDiscount)}
+                            </span>
+                        </div>
+                        <div className="flex justify-between text-sm font-medium border-t border-gray-200 dark:border-gray-700 pt-2 mt-2">
+                            <span className="text-gray-800 dark:text-gray-200">
+                                Item Subtotal
+                            </span>
+                            <span className="text-gray-900 dark:text-gray-100">
+                                {formatPrice(subtotal)}
+                            </span>
+                        </div>
+                    </>
+                ) : (
+                    <div className="flex justify-between text-sm">
+                        <span className="text-gray-600 dark:text-gray-400">
+                            Items ({itemCount})
+                        </span>
+                        <span className="text-gray-900 dark:text-gray-100">
+                            {formatPrice(subtotal)}
+                        </span>
+                    </div>
+                )}
 
                 <div className="flex justify-between text-sm">
                     <span className="text-gray-600 dark:text-gray-400">Delivery</span>
                     <span className="text-green-600 font-medium">Digital Delivery</span>
-                </div>
-
-                <div className="flex justify-between text-sm">
-                    <span className="text-gray-600 dark:text-gray-400">Discount</span>
-                    <span className="text-gray-900 dark:text-gray-100">-Rs. 0</span>
                 </div>
             </div>
 

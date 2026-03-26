@@ -58,8 +58,8 @@ const categories = [
 const initialFormState = {
     name: '',
     description: '',
-    price: '',
-    compareAtPrice: '',
+    basePrice: '',
+    discountPercent: '',
     category: 'wedding-cards',
     imageUrl: '',
     images: [], // Multiple images support
@@ -164,11 +164,22 @@ export default function AdminProductsPage() {
     const openEditModal = (product) => {
         setIsEditing(true);
         setEditingProduct(product);
+        
+        let basePrice = product.price?.toString() || '';
+        let discountPercent = '';
+        
+        if (product.compareAtPrice) {
+            basePrice = product.compareAtPrice.toString();
+            // Calculate what percentage discount was applied
+            const dp = Math.round(((product.compareAtPrice - product.price) / product.compareAtPrice) * 100);
+            discountPercent = dp.toString();
+        }
+        
         setFormData({
             name: product.name || '',
             description: product.description || '',
-            price: product.price?.toString() || '',
-            compareAtPrice: product.compareAtPrice?.toString() || '',
+            basePrice: basePrice,
+            discountPercent: discountPercent,
             category: product.category || 'canva-templates',
             imageUrl: product.imageUrl || '',
             images: product.images || (product.imageUrl ? [product.imageUrl] : []),
@@ -288,8 +299,11 @@ export default function AdminProductsPage() {
     const validateForm = () => {
         const errors = {};
         if (!formData.name.trim()) errors.name = 'Name is required';
-        if (!formData.price || parseFloat(formData.price) <= 0) {
-            errors.price = 'Valid price is required';
+        if (!formData.basePrice || parseFloat(formData.basePrice) <= 0) {
+            errors.basePrice = 'Valid base price is required';
+        }
+        if (formData.discountPercent && (parseFloat(formData.discountPercent) < 0 || parseFloat(formData.discountPercent) >= 100)) {
+            errors.discountPercent = 'Discount must be between 0 and 99';
         }
         setFormErrors(errors);
         return Object.keys(errors).length === 0;
@@ -304,11 +318,22 @@ export default function AdminProductsPage() {
         setIsSubmitting(true);
 
         try {
+            const bp = parseFloat(formData.basePrice);
+            const dp = formData.discountPercent ? parseFloat(formData.discountPercent) : 0;
+            
+            let finalPrice = bp;
+            let finalCompareAtPrice = null;
+            
+            if (dp > 0) {
+                finalPrice = Math.round(bp * (1 - (dp / 100)));
+                finalCompareAtPrice = bp;
+            }
+            
             const productData = {
                 name: formData.name.trim(),
                 description: formData.description.trim(),
-                price: parseFloat(formData.price),
-                compareAtPrice: formData.compareAtPrice ? parseFloat(formData.compareAtPrice) : null,
+                price: finalPrice,
+                compareAtPrice: finalCompareAtPrice,
                 category: formData.category,
                 imageUrl: formData.imageUrl, // Kept for backward compatibility
                 images: formData.images, // New array
@@ -484,8 +509,8 @@ export default function AdminProductsPage() {
                                         )}
                                     </p>
                                     {product.compareAtPrice && product.compareAtPrice > product.price && (
-                                        <span className="inline-flex items-center mt-1 text-xs font-bold text-yellow-400 bg-yellow-400/10 px-2 py-0.5 rounded-full">
-                                            🌙 Eid Sale: {Math.round(((product.compareAtPrice - product.price) / product.compareAtPrice) * 100)}% OFF
+                                        <span className="inline-flex items-center mt-1 text-xs font-bold text-yellow-500 bg-yellow-500/10 border border-yellow-500/20 px-2 py-0.5 rounded-full">
+                                            SALE: {Math.round(((product.compareAtPrice - product.price) / product.compareAtPrice) * 100)}% OFF
                                         </span>
                                     )}
 
@@ -654,40 +679,45 @@ export default function AdminProductsPage() {
                                     />
                                 </div>
 
-                                {/* Price & Category Row */}
+                                {/* Price & Discount Row */}
                                 <div className="grid gap-4 sm:grid-cols-2">
                                     <div>
-                                        <Label htmlFor="price" className="text-gray-300">Sale Price (PKR) *</Label>
+                                        <Label htmlFor="basePrice" className="text-gray-300">Base Price (PKR) *</Label>
                                         <Input
-                                            id="price"
-                                            name="price"
+                                            id="basePrice"
+                                            name="basePrice"
                                             type="number"
-                                            value={formData.price}
+                                            value={formData.basePrice}
                                             onChange={handleInputChange}
                                             placeholder="0.00"
-                                            error={formErrors.price}
+                                            error={formErrors.basePrice}
                                             className="mt-1 bg-gray-800 border-gray-700 text-white"
                                         />
                                     </div>
                                     <div>
-                                        <Label htmlFor="compareAtPrice" className="text-gray-300">
-                                            Compare at Price (PKR)
-                                            <span className="text-xs text-yellow-400 ml-1">Eid Sale</span>
+                                        <Label htmlFor="discountPercent" className="text-gray-300">
+                                            Discount Percentage (%)
                                         </Label>
                                         <Input
-                                            id="compareAtPrice"
-                                            name="compareAtPrice"
+                                            id="discountPercent"
+                                            name="discountPercent"
                                             type="number"
-                                            value={formData.compareAtPrice}
+                                            value={formData.discountPercent}
                                             onChange={handleInputChange}
-                                            placeholder="Original price (leave empty if no sale)"
+                                            placeholder="e.g. 10, 20, 50"
+                                            error={formErrors.discountPercent}
                                             className="mt-1 bg-gray-800 border-gray-700 text-white"
                                         />
-                                        {formData.compareAtPrice && formData.price && Number(formData.compareAtPrice) > Number(formData.price) && (
-                                            <p className="mt-1 text-xs text-yellow-400">
-                                                🌙 {Math.round(((Number(formData.compareAtPrice) - Number(formData.price)) / Number(formData.compareAtPrice)) * 100)}% discount will be shown
-                                            </p>
-                                        )}
+                                    </div>
+                                    
+                                    {/* Final Calculated Price Display */}
+                                    <div className="sm:col-span-2 bg-gray-800/50 p-3 rounded-lg border border-gray-700 flex justify-between items-center">
+                                        <span className="text-sm font-medium text-gray-400">Final Sale Price:</span>
+                                        <span className="text-lg font-bold text-pink-500">
+                                            Rs {formData.basePrice && !isNaN(formData.basePrice) 
+                                                ? Math.round(parseFloat(formData.basePrice) * (1 - (parseFloat(formData.discountPercent) || 0) / 100))
+                                                : '0'}
+                                        </span>
                                     </div>
                                 </div>
 

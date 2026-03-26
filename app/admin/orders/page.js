@@ -555,6 +555,30 @@ export default function AdminOrdersPage() {
                                                                     <span className="text-gray-300 font-mono">{order.transactionId}</span>
                                                                 </div>
                                                             )}
+                                                            
+                                                            {/* Financial Breakdown */}
+                                                            <div className="mt-3 pt-3 border-t border-gray-800 space-y-2">
+                                                                <div className="flex justify-between text-xs">
+                                                                    <span className="text-gray-500">Gross Subtotal</span>
+                                                                    <span className="text-gray-300">{formatPrice(order.subtotal || order.total)}</span>
+                                                                </div>
+                                                                {order.productDiscount > 0 && (
+                                                                    <div className="flex justify-between text-xs">
+                                                                        <span className="text-purple-400">Product Discounts</span>
+                                                                        <span className="text-purple-400">-{formatPrice(order.productDiscount)}</span>
+                                                                    </div>
+                                                                )}
+                                                                {order.rewardDiscount > 0 && (
+                                                                    <div className="flex justify-between text-xs">
+                                                                        <span className="text-pink-400">Reward Discount ({order.discountPercent}%)</span>
+                                                                        <span className="text-pink-400">-{formatPrice(order.rewardDiscount)}</span>
+                                                                    </div>
+                                                                )}
+                                                                <div className="flex justify-between text-sm font-bold pt-1">
+                                                                    <span className="text-gray-400">Final Total</span>
+                                                                    <span className="text-white">{formatPrice(order.total)}</span>
+                                                                </div>
+                                                            </div>
 
                                                             {/* Customization Notes */}
                                                             {order.notes && (

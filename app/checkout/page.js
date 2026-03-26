@@ -68,7 +68,7 @@ const paymentMethods = [
 
 export default function CheckoutPage() {
     const router = useRouter();
-    const { cart, isLoaded, clearCart, getTotal, getItemCount } = useCart();
+    const { cart, isLoaded, clearCart, getTotal, getOriginalSubtotal, getItemCount } = useCart();
     const { user, isAuthenticated } = useAuth();
 
     // Form state
@@ -220,10 +220,12 @@ export default function CheckoutPage() {
         setIsSubmitting(true);
 
         try {
-            // Calculate discount if tier selected
-            const discountPercent = selectedTier?.discountPercent || 0;
-            const discountAmount = Math.round((getTotal() * discountPercent) / 100);
-            const finalTotal = getTotal() - discountAmount;
+            // Calculate discounts
+            const subtotal = getTotal(); // This is the post-product-discount total
+            const productDiscountAmount = getOriginalSubtotal() - subtotal;
+            const rewardDiscountPercent = selectedTier?.discountPercent || 0;
+            const rewardDiscountAmount = Math.round((subtotal * rewardDiscountPercent) / 100);
+            const finalTotal = subtotal - rewardDiscountAmount;
 
             const orderData = {
                 userId: user?.uid || null,
@@ -231,9 +233,11 @@ export default function CheckoutPage() {
                 userName: formData.name,
                 userPhone: formData.phone,
                 items: cart,
-                subtotal: getTotal(),
-                discount: discountAmount,
-                discountPercent: discountPercent,
+                subtotal: getOriginalSubtotal(), // Save the original gross total
+                discount: productDiscountAmount + rewardDiscountAmount, // Store total discount amount
+                productDiscount: productDiscountAmount,
+                rewardDiscount: rewardDiscountAmount,
+                discountPercent: rewardDiscountPercent,
                 pointsUsed: selectedTier?.pointsRequired || 0,
                 total: finalTotal,
                 paymentMethod: selectedPayment,
@@ -250,7 +254,7 @@ export default function CheckoutPage() {
                         user.email,
                         selectedTier.pointsRequired,
                         'redeemed',
-                        { note: `Redeemed for ${discountPercent}% off` }
+                        { note: `Redeemed for ${rewardDiscountPercent}% off` }
                     );
                 } catch (err) {
                     console.error('Failed to deduct points:', err);
@@ -751,12 +755,28 @@ export default function CheckoutPage() {
                                     <div className="mt-4 space-y-2 border-t border-pink-100 pt-4">
                                         <div className="flex justify-between text-sm">
                                             <span className="text-gray-600">
-                                                Subtotal ({itemCount} items)
+                                                Items ({itemCount})
                                             </span>
-                                            <span className="text-gray-800">
-                                                {formatPrice(total)}
-                                            </span>
+                                            {getOriginalSubtotal() > getTotal() ? (
+                                                <span className="text-gray-500 line-through">
+                                                    {formatPrice(getOriginalSubtotal())}
+                                                </span>
+                                            ) : (
+                                                <span className="text-gray-800">
+                                                    {formatPrice(getTotal())}
+                                                </span>
+                                            )}
                                         </div>
+                                        
+                                        {/* Product Discounts */}
+                                        {getOriginalSubtotal() > getTotal() && (
+                                            <div className="flex justify-between text-sm">
+                                                <span className="text-pink-600">Product Discounts</span>
+                                                <span className="text-pink-600 font-medium">
+                                                    -{formatPrice(getOriginalSubtotal() - getTotal())}
+                                                </span>
+                                            </div>
+                                        )}
                                         {selectedTier && (
                                             <motion.div
                                                 initial={{ opacity: 0, height: 0 }}
@@ -789,11 +809,11 @@ export default function CheckoutPage() {
                                         <div className="text-right">
                                             {selectedTier && (
                                                 <span className="text-sm text-gray-400 line-through mr-2">
-                                                    {formatPrice(total)}
+                                                    {formatPrice(getTotal())}
                                                 </span>
                                             )}
                                             <span className="text-xl font-bold text-pink-500">
-                                                {formatPrice(selectedTier ? total - Math.round((total * selectedTier.discountPercent) / 100) : total)}
+                                                {formatPrice(selectedTier ? getTotal() - Math.round((getTotal() * selectedTier.discountPercent) / 100) : getTotal())}
                                             </span>
                                         </div>
                                     </div>

@@ -100,6 +100,7 @@ export function CartProvider({ children }) {
                 id: product.id,
                 name: product.name,
                 price: product.price,
+                compareAtPrice: product.compareAtPrice || null,
                 imageUrl: product.imageUrl,
                 category: product.category,
                 quantity: quantity
@@ -184,10 +185,17 @@ export function CartProvider({ children }) {
     }, [cart]);
 
     /**
-     * Calculate cart subtotal
+     * Calculate cart subtotal (after product discounts)
      */
     const getSubtotal = useCallback(() => {
         return cart.reduce((total, item) => total + (item.price * item.quantity), 0);
+    }, [cart]);
+
+    /**
+     * Calculate original cart subtotal (before product discounts)
+     */
+    const getOriginalSubtotal = useCallback(() => {
+        return cart.reduce((total, item) => total + ((item.compareAtPrice || item.price) * item.quantity), 0);
     }, [cart]);
 
     /**
@@ -217,6 +225,7 @@ export function CartProvider({ children }) {
         isInCart,
         getCartItem,
         getSubtotal,
+        getOriginalSubtotal,
         getItemCount,
         getTotal
     };

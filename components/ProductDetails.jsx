@@ -63,11 +63,7 @@ export default function ProductDetails({ product, relatedProducts, initialReview
     }
 
     const handleAddToCart = () => {
-        // TEMPORARY: Pass the discounted price to the cart
-        const currentSalePrice = Math.round(product.price * 0.7);
-        const cartProduct = { ...product, price: currentSalePrice };
-        
-        addToCart(cartProduct);
+        addToCart(product);
         toast.success({
             title: 'Added to Cart!',
             description: `${product.name} has been added to your cart.`,
@@ -96,11 +92,7 @@ export default function ProductDetails({ product, relatedProducts, initialReview
     const supportEmail = process.env.NEXT_PUBLIC_SUPPORT_EMAIL || 'artovia.business@gmail.com';
     const inCart = isInCart(product.id);
 
-    // TEMPORARY: Auto-apply 30% Eid discount on all products
-    // Remove these lines when using real compareAtPrice from admin
-    const originalPrice = product.price;
-    const salePrice = Math.round(product.price * 0.7);
-    const discount = 30; // Force 30% display entirely
+    const discount = getDiscountPercent(product.price, product.compareAtPrice);
 
     // Ensure we have a valid image source array
     const productImages = product.images?.length > 0 ? product.images : [product.imageUrl || '/images/placeholder-product.png'];
@@ -295,7 +287,7 @@ export default function ProductDetails({ product, relatedProducts, initialReview
                             {discount && (
                                 <div className="absolute left-3 top-3 z-20 flex flex-col gap-1.5">
                                     <Badge className="bg-gradient-to-r from-yellow-500 to-amber-500 text-white border-0 text-xs font-bold shadow-lg shadow-yellow-500/30 px-3 py-1">
-                                        🌙 EID SALE
+                                        SALE
                                     </Badge>
                                     <Badge className="bg-red-500 text-white border-0 text-xs font-bold px-2 py-0.5">
                                         -{discount}% OFF
@@ -377,11 +369,11 @@ export default function ProductDetails({ product, relatedProducts, initialReview
                         <div className="bg-pink-50/50 dark:bg-gray-900/50 p-4 rounded-xl border border-pink-100 dark:border-gray-800">
                             <div className="flex items-baseline gap-3">
                                 <p className="text-3xl font-bold text-pink-600 dark:text-pink-400">
-                                    {formatPrice(salePrice)}
+                                    {formatPrice(product.price)}
                                 </p>
                                 {discount && (
                                     <p className="text-base text-gray-400 line-through decoration-pink-300">
-                                        {formatPrice(originalPrice)}
+                                        {formatPrice(product.compareAtPrice)}
                                     </p>
                                 )}
                                 {discount && (

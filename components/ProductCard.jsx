@@ -32,9 +32,7 @@ export default function ProductCard({ product, className, priority = false }) {
         e.preventDefault();
         e.stopPropagation();
         
-        // TEMPORARY: Pass the discounted price to the cart
-        const cartProduct = { ...product, price: salePrice };
-        addToCart(cartProduct);
+        addToCart(product);
         
         toast.success({
             title: 'Added to Cart!',
@@ -44,11 +42,7 @@ export default function ProductCard({ product, className, priority = false }) {
 
     const inCart = isInCart(product.id);
 
-    // TEMPORARY: Auto-apply 30% Eid discount on all products
-    // Remove these lines when using real compareAtPrice from admin
-    const originalPrice = product.price;
-    const salePrice = Math.round(product.price * 0.7);
-    const discount = 30; // Force 30% display entirely
+    const discount = getDiscountPercent(product.price, product.compareAtPrice);
 
     // Placeholder image if product image fails to load
     const productImage = imageError || !(product.imageUrl || product.images?.[0])
@@ -121,7 +115,7 @@ export default function ProductCard({ product, className, priority = false }) {
                     {discount && (
                         <div className="absolute left-2 top-2 z-20 flex flex-col gap-1">
                             <Badge className="bg-gradient-to-r from-yellow-500 to-amber-500 text-white border-0 text-xs font-bold shadow-lg shadow-yellow-500/30 px-2">
-                                🌙 EID SALE
+                                SALE
                             </Badge>
                             <Badge className="bg-red-500 text-white border-0 text-[10px] font-bold px-1.5">
                                 -{discount}% OFF
@@ -174,11 +168,11 @@ export default function ProductCard({ product, className, priority = false }) {
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-1.5">
                             <span className="text-base font-bold text-pink-500">
-                                {formatPrice(salePrice)}
+                                {formatPrice(product.price)}
                             </span>
                             {discount && (
                                 <span className="text-xs text-gray-400 line-through">
-                                    {formatPrice(originalPrice)}
+                                    {formatPrice(product.compareAtPrice)}
                                 </span>
                             )}
                         </div>
@@ -210,19 +204,13 @@ export function ProductCardHorizontal({ product, className }) {
     const [imageError, setImageError] = useState(false);
     const { addToCart, isInCart } = useCart();
 
-    // TEMPORARY: Auto-apply 30% Eid discount on all products
-    // Remove these lines when using real compareAtPrice from admin
-    const originalPrice = product.price;
-    const salePrice = Math.round(product.price * 0.7);
-    const discount = 30; // Force 30% completely
+    const discount = getDiscountPercent(product.price, product.compareAtPrice);
 
     const handleAddToCart = (e) => {
         e.preventDefault();
         e.stopPropagation();
         
-        // TEMPORARY: Pass the discounted price to the cart
-        const cartProduct = { ...product, price: salePrice };
-        addToCart(cartProduct);
+        addToCart(product);
         
         toast.success({
             title: 'Added to Cart!',
