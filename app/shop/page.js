@@ -40,7 +40,7 @@ const sortOptions = [
 const defaultCategories = [
     { id: 'wedding-cards', name: 'Wedding Cards' },
     { id: 'bundles', name: 'Bundles' },
-    { id: 'lightroom-templates', name: 'Lightroom Templates', comingSoon: true },
+    { id: 'lightroom-templates', name: 'Lightroom Presets' },
     { id: 'e-books', name: 'E-Books' },
     { id: 'social-media', name: 'Social Media' },
     { id: 'business', name: 'Business' },

@@ -260,18 +260,44 @@ export default function AdminOrdersPage() {
             const result = await approveOrder(approvalOrder.id, validLinks);
 
             if (result.success) {
-                // Send Email
-                await fetch('/api/send-email', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        type: 'order_approval',
-                        order: approvalOrder,
-                        downloadLinks: validLinks
-                    })
-                });
+                // Check if this order contains preset products (has DNG files)
+                const presetFiles = [];
+                for (const link of validLinks) {
+                    // If the link URL contains 'dng' or 'presets/dng', it's a preset file
+                    if (link.url && (link.url.toLowerCase().includes('.dng') || link.url.includes('presets/dng'))) {
+                        presetFiles.push({
+                            name: link.name.endsWith('.dng') ? link.name : `${link.name}.dng`,
+                            url: link.url
+                        });
+                    }
+                }
 
-                toast.success({ title: 'Order approved and email sent' });
+                if (presetFiles.length > 0) {
+                    // Send preset delivery email with DNG attachment
+                    console.log('📧 Sending preset delivery email with', presetFiles.length, 'DNG files');
+                    await fetch('/api/send-email', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            type: 'preset_delivery',
+                            order: approvalOrder,
+                            presetFiles: presetFiles
+                        })
+                    });
+                    toast.success({ title: 'Order approved! Presets sent via email with DNG attached 📸' });
+                } else {
+                    // Regular approval email with download links
+                    await fetch('/api/send-email', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            type: 'order_approval',
+                            order: approvalOrder,
+                            downloadLinks: validLinks
+                        })
+                    });
+                    toast.success({ title: 'Order approved and email sent' });
+                }
 
                 // Update local state
                 const updatedOrders = orders.map(o =>
@@ -732,13 +758,18 @@ export default function AdminOrdersPage() {
                                                                             const result = await getProductById(productId);
                                                                             if (result.success && result.product) {
                                                                                 const p = result.product;
-                                                                                // Fallback: downloadUrl -> canvaLink -> Cloudinary Image
-                                                                                const fetchedLink = p.downloadUrl || p.canvaLink || (p.imageUrl?.includes('cloudinary') ? p.imageUrl : null);
+                                                                                // Preset check: dngFileUrl first, then fallback chain
+                                                                                const fetchedLink = p.dngFileUrl || p.downloadUrl || p.canvaLink || (p.imageUrl?.includes('cloudinary') ? p.imageUrl : null);
+                                                                                const isPreset = Boolean(p.dngFileUrl);
 
                                                                                 if (fetchedLink) {
                                                                                     updateDownloadLink(index, 'url', fetchedLink);
-                                                                                    updateDownloadLink(index, 'type', (fetchedLink.includes('cloudinary') ? 'file' : 'link'));
-                                                                                    toast.success({ title: "Fetched from product!" });
+                                                                                    updateDownloadLink(index, 'type', 'file');
+                                                                                    // Auto-set name with .dng extension for presets
+                                                                                    if (isPreset && !downloadLinks[index]?.name?.endsWith('.dng')) {
+                                                                                        updateDownloadLink(index, 'name', `${p.name || 'Preset'}.dng`);
+                                                                                    }
+                                                                                    toast.success({ title: isPreset ? "DNG preset loaded! 📸" : "Fetched from product!" });
                                                                                 } else {
                                                                                     toast.error({ title: "No link/file found in product." });
                                                                                 }

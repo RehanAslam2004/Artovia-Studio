@@ -18,6 +18,7 @@ import {
     ChevronLeft,
     ChevronRight,
     ArrowRight,
+    Play,
     X
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
@@ -41,21 +42,56 @@ export default function ProductDetails({ product, relatedProducts, initialReview
     const { addToCart, isInCart } = useCart();
 
     const [imageError, setImageError] = useState(false);
-    const [selectedImage, setSelectedImage] = useState(0);
+    const [selectedMediaIndex, setSelectedMediaIndex] = useState(0);
     const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+
+    // Construct a unified media items list
+    const initialImage = product?.images?.[0] || product?.imageUrl || '/images/placeholder-product.png';
+    const otherImages = product?.images?.length > 1 ? product.images.slice(1) : [];
+
+    const mediaItems = [];
+    if (product) {
+        // 1. Add main image
+        mediaItems.push({
+            type: 'image',
+            url: initialImage
+        });
+
+        // 2. Add video if present (second item)
+        if (product.previewVideoUrl) {
+            mediaItems.push({
+                type: 'video',
+                url: product.previewVideoUrl,
+                thumbnailUrl: product.previewVideoThumbnailUrl || initialImage
+            });
+        }
+
+        // 3. Add other images
+        otherImages.forEach(img => {
+            mediaItems.push({
+                type: 'image',
+                url: img
+            });
+        });
+    }
 
     // Keyboard navigation for lightbox
     useEffect(() => {
         const handleKeyDown = (e) => {
             if (!isLightboxOpen) return;
             if (e.key === 'Escape') setIsLightboxOpen(false);
-            if (e.key === 'ArrowLeft') setSelectedImage(prev => prev > 0 ? prev - 1 : (product.images?.length || 1) - 1);
-            if (e.key === 'ArrowRight') setSelectedImage(prev => prev < (product.images?.length || 1) - 1 ? prev + 1 : 0);
+            if (e.key === 'ArrowLeft') setSelectedMediaIndex(prev => prev > 0 ? prev - 1 : mediaItems.length - 1);
+            if (e.key === 'ArrowRight') setSelectedMediaIndex(prev => prev < mediaItems.length - 1 ? prev + 1 : 0);
         };
 
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [isLightboxOpen, product.images]);
+    }, [isLightboxOpen, mediaItems.length]);
+
+    // Reset image error state on navigation
+    useEffect(() => {
+        setImageError(false);
+    }, [selectedMediaIndex]);
 
     // If product is not provided (shouldn't happen in normal flow if parent handles it)
     if (!product) {
@@ -94,9 +130,8 @@ export default function ProductDetails({ product, relatedProducts, initialReview
 
     const discount = getDiscountPercent(product.price, product.compareAtPrice);
 
-    // Ensure we have a valid image source array
-    const productImages = product.images?.length > 0 ? product.images : [product.imageUrl || '/images/placeholder-product.png'];
-    const currentImageSrc = imageError ? '/images/placeholder-product.png' : productImages[selectedImage] || productImages[0];
+    const currentMediaItem = mediaItems[selectedMediaIndex] || mediaItems[0];
+    const currentImageSrc = imageError ? '/images/placeholder-product.png' : currentMediaItem?.url || '/images/placeholder-product.png';
 
     return (
         <div className="min-h-screen bg-white dark:bg-gray-950 font-sans">
@@ -119,12 +154,12 @@ export default function ProductDetails({ product, relatedProducts, initialReview
                         </button>
 
                         {/* Navigation Buttons */}
-                        {productImages.length > 1 && (
+                        {mediaItems.length > 1 && (
                             <>
                                 <button
                                     onClick={(e) => {
                                         e.stopPropagation();
-                                        setSelectedImage(prev => prev > 0 ? prev - 1 : productImages.length - 1);
+                                        setSelectedMediaIndex(prev => prev > 0 ? prev - 1 : mediaItems.length - 1);
                                     }}
                                     className="absolute left-4 top-1/2 -translate-y-1/2 z-[210] p-4 text-white/70 hover:text-white hover:bg-white/10 rounded-full transition-all"
                                 >
@@ -133,7 +168,7 @@ export default function ProductDetails({ product, relatedProducts, initialReview
                                 <button
                                     onClick={(e) => {
                                         e.stopPropagation();
-                                        setSelectedImage(prev => prev < productImages.length - 1 ? prev + 1 : 0);
+                                        setSelectedMediaIndex(prev => prev < mediaItems.length - 1 ? prev + 1 : 0);
                                     }}
                                     className="absolute right-4 top-1/2 -translate-y-1/2 z-[210] p-4 text-white/70 hover:text-white hover:bg-white/10 rounded-full transition-all"
                                 >
@@ -142,55 +177,69 @@ export default function ProductDetails({ product, relatedProducts, initialReview
                             </>
                         )}
 
-                        {/* Main Lightbox Image */}
+                        {/* Main Lightbox Media */}
                         <div
                             className="relative w-full h-full max-w-7xl max-h-[90vh] p-4 flex items-center justify-center"
                             onClick={(e) => e.stopPropagation()}
                         >
                             <motion.div
-                                key={selectedImage}
+                                key={selectedMediaIndex}
                                 initial={{ opacity: 0, scale: 0.95 }}
                                 animate={{ opacity: 1, scale: 1 }}
                                 transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                                className="relative w-full h-full select-none"
+                                className="relative w-full h-full select-none flex items-center justify-center"
                                 onContextMenu={(e) => e.preventDefault()}
                             >
-                                <Image
-                                    src={currentImageSrc}
-                                    alt={product.name}
-                                    fill
-                                    className="object-contain"
-                                    quality={100}
-                                    priority
-                                    draggable={false}
-                                    sizes="(max-width: 1280px) 100vw, 1280px"
-                                />
-
-                                {/* Watermark Overlay (Visible in Lightbox) */}
-                                <div className="absolute inset-0 pointer-events-none opacity-20 overflow-hidden z-10">
-                                    <div className="absolute inset-[-50%] flex flex-wrap items-center justify-center gap-12 rotate-[-30deg]">
-                                        {Array.from({ length: 15 }).map((_, i) => (
-                                            <span key={i} className="text-4xl font-bold text-white drop-shadow-md whitespace-nowrap select-none">
-                                                ARTOVIA STUDIO
-                                            </span>
-                                        ))}
+                                {currentMediaItem?.type === 'video' ? (
+                                    <div className="relative w-full max-w-4xl aspect-video rounded-lg overflow-hidden border border-gray-800 bg-black shadow-2xl">
+                                        <video
+                                            src={currentMediaItem.url}
+                                            className="w-full h-full object-contain"
+                                            controls
+                                            autoPlay
+                                            playsInline
+                                        />
                                     </div>
-                                </div>
+                                ) : (
+                                    <Image
+                                        src={currentImageSrc}
+                                        alt={product.name}
+                                        fill
+                                        className="object-contain"
+                                        quality={100}
+                                        priority
+                                        draggable={false}
+                                        sizes="(max-width: 1280px) 100vw, 1280px"
+                                    />
+                                )}
+
+                                {/* Watermark Overlay (Visible in Lightbox, only on images) */}
+                                {currentMediaItem?.type === 'image' && (
+                                    <div className="absolute inset-0 pointer-events-none opacity-20 overflow-hidden z-10">
+                                        <div className="absolute inset-[-50%] flex flex-wrap items-center justify-center gap-12 rotate-[-30deg]">
+                                            {Array.from({ length: 15 }).map((_, i) => (
+                                                <span key={i} className="text-4xl font-bold text-white drop-shadow-md whitespace-nowrap select-none">
+                                                    ARTOVIA STUDIO
+                                                </span>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
                             </motion.div>
                         </div>
 
                         {/* Lightbox Thumbnails */}
-                        {productImages.length > 1 && (
+                        {mediaItems.length > 1 && (
                             <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 overflow-x-auto max-w-[90vw] p-2" onClick={(e) => e.stopPropagation()}>
-                                {productImages.map((img, index) => (
+                                {mediaItems.map((item, index) => (
                                     <button
                                         key={index}
-                                        onClick={() => setSelectedImage(index)}
-                                        className={`relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-md border-2 transition-all ${selectedImage === index ? 'border-pink-500 ring-2 ring-pink-500/50' : 'border-transparent opacity-80 hover:opacity-100'
+                                        onClick={() => setSelectedMediaIndex(index)}
+                                        className={`relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-md border-2 transition-all ${selectedMediaIndex === index ? 'border-pink-500 ring-2 ring-pink-500/50' : 'border-transparent opacity-80 hover:opacity-100'
                                             }`}
                                     >
                                         <img
-                                            src={img}
+                                            src={item.type === 'video' ? item.thumbnailUrl : item.url}
                                             alt={`Thumbnail ${index + 1}`}
                                             className="absolute inset-0 w-full h-full object-cover"
                                             referrerPolicy="no-referrer"
@@ -199,6 +248,11 @@ export default function ProductDetails({ product, relatedProducts, initialReview
                                                 e.currentTarget.parentElement.style.backgroundColor = '#ffcccc';
                                             }}
                                         />
+                                        {item.type === 'video' && (
+                                            <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+                                                <Play className="h-4 w-4 text-white fill-white" />
+                                            </div>
+                                        )}
                                     </button>
                                 ))}
                             </div>
@@ -242,29 +296,41 @@ export default function ProductDetails({ product, relatedProducts, initialReview
                 <div className="grid gap-8 lg:grid-cols-2 lg:gap-10 items-start">
                     {/* Product Image Section */}
                     <div className="lg:sticky lg:top-20 space-y-4">
-                        {/* Main Image */}
+                        {/* Main Media (Image or Video) */}
                         <motion.div
                             layoutId={`product-image-${product.id}`}
                             className="relative aspect-square overflow-hidden rounded-xl bg-gray-50 dark:bg-gray-900 cursor-zoom-in group shadow-md border border-pink-100 dark:border-gray-800"
                             onClick={() => setIsLightboxOpen(true)}
                         >
-                            <Image
-                                src={currentImageSrc}
-                                alt={product.name}
-                                fill
-                                className="object-cover transition-transform duration-500 group-hover:scale-105"
-                                priority
-                                sizes="(max-width: 1024px) 100vw, 50vw"
-                                onError={() => setImageError(true)}
-                            />
+                            {currentMediaItem?.type === 'video' ? (
+                                <video
+                                    src={currentMediaItem.url}
+                                    className="w-full h-full object-cover animate-fade-in"
+                                    autoPlay
+                                    muted
+                                    loop
+                                    playsInline
+                                    poster={currentMediaItem.thumbnailUrl}
+                                />
+                            ) : (
+                                <Image
+                                    src={currentImageSrc}
+                                    alt={product.name}
+                                    fill
+                                    className="object-cover transition-transform duration-500 group-hover:scale-105"
+                                    priority
+                                    sizes="(max-width: 1024px) 100vw, 50vw"
+                                    onError={() => setImageError(true)}
+                                />
+                            )}
 
                             {/* Zoom Hint */}
-                            <div className="absolute top-3 right-3 bg-white/90 dark:bg-black/80 backdrop-blur-sm p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-sm">
+                            <div className="absolute top-3 right-3 bg-white/90 dark:bg-black/80 backdrop-blur-sm p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-sm z-10">
                                 <Maximize2 className="h-4 w-4 text-pink-600" />
                             </div>
 
                             {/* Watermark Overlay (Visible) */}
-                            <div className="absolute inset-0 pointer-events-none opacity-20 overflow-hidden">
+                            <div className="absolute inset-0 pointer-events-none opacity-20 overflow-hidden z-10">
                                 <div className="absolute inset-[-50%] flex flex-wrap items-center justify-center gap-12 rotate-[-30deg]">
                                     {Array.from({ length: 15 }).map((_, i) => (
                                         <span key={i} className="text-3xl font-bold text-white drop-shadow-md whitespace-nowrap">
@@ -296,27 +362,48 @@ export default function ProductDetails({ product, relatedProducts, initialReview
                             )}
                         </motion.div>
 
-                        {/* Image Thumbnails */}
+                        {/* Media Thumbnails */}
                         <div className="flex gap-2 overflow-x-auto py-2">
-                            {productImages.map((img, index) => (
+                            {mediaItems.map((item, index) => (
                                 <button
                                     key={index}
-                                    onClick={() => setSelectedImage(index)}
-                                    className={`relative flex-shrink-0 w-20 h-20 rounded-lg border-2 transition-all overflow-hidden ${selectedImage === index
+                                    onClick={() => setSelectedMediaIndex(index)}
+                                    className={`relative flex-shrink-0 w-20 h-20 rounded-lg border-2 transition-all overflow-hidden ${selectedMediaIndex === index
                                         ? 'border-pink-500 ring-2 ring-pink-200 shadow-sm'
                                         : 'border-pink-100 hover:border-pink-300'
                                         }`}
                                 >
-                                    <img
-                                        src={img}
-                                        alt={`View ${index + 1}`}
-                                        className="w-full h-full object-cover"
-                                        referrerPolicy="no-referrer"
-                                        onError={(e) => {
-                                            e.currentTarget.style.display = 'none';
-                                            e.currentTarget.parentElement.style.backgroundColor = '#ffcccc'; // Light red failure state
-                                        }}
-                                    />
+                                    {item.type === 'video' ? (
+                                        <>
+                                            <img
+                                                src={item.thumbnailUrl}
+                                                alt="Video Thumbnail"
+                                                className="w-full h-full object-cover"
+                                                referrerPolicy="no-referrer"
+                                                onError={(e) => {
+                                                    e.currentTarget.style.display = 'none';
+                                                    e.currentTarget.parentElement.style.backgroundColor = '#ffcccc';
+                                                }}
+                                            />
+                                            {/* Play Icon overlay */}
+                                            <div className="absolute inset-0 flex items-center justify-center bg-black/35">
+                                                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-pink-500 text-white shadow-md">
+                                                    <Play className="h-3 w-3 fill-white ml-0.5" />
+                                                </div>
+                                            </div>
+                                        </>
+                                    ) : (
+                                        <img
+                                            src={item.url}
+                                            alt={`View ${index + 1}`}
+                                            className="w-full h-full object-cover"
+                                            referrerPolicy="no-referrer"
+                                            onError={(e) => {
+                                                e.currentTarget.style.display = 'none';
+                                                e.currentTarget.parentElement.style.backgroundColor = '#ffcccc';
+                                            }}
+                                        />
+                                    )}
                                 </button>
                             ))}
                         </div>

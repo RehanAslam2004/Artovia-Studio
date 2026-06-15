@@ -39,11 +39,10 @@ const categories = [
     },
     {
         id: 'lightroom-templates',
-        name: 'Lightroom Templates',
-        description: 'Professional presets for your photos',
+        name: 'Lightroom Presets',
+        description: 'Professional presets for stunning photos',
         color: 'from-cyan-400 via-sky-400 to-blue-500',
         icon: Camera,
-        comingSoon: true,
     },
     {
         id: 'social-media',

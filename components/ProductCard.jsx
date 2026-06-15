@@ -6,11 +6,11 @@
  * Elegant product card with pink theme and add to cart functionality.
  */
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
-import { ShoppingCart, Eye, Tag } from 'lucide-react';
+import { ShoppingCart, Eye, Tag, Play } from 'lucide-react';
 import { useCart } from '@/hooks/useCart';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
@@ -27,6 +27,8 @@ export default function ProductCard({ product, className, priority = false }) {
     const [isHovered, setIsHovered] = useState(false);
     const [imageError, setImageError] = useState(false);
     const { addToCart, isInCart } = useCart();
+    const videoRef = useRef(null);
+    const hasVideo = Boolean(product.previewVideoUrl);
 
     const handleAddToCart = (e) => {
         e.preventDefault();
@@ -56,8 +58,19 @@ export default function ProductCard({ product, className, priority = false }) {
                 'hover:border-pink-200 hover:shadow-lg',
                 className
             )}
-            onMouseEnter={() => setIsHovered(true)}
-            onMouseLeave={() => setIsHovered(false)}
+            onMouseEnter={() => {
+                setIsHovered(true);
+                if (hasVideo && videoRef.current) {
+                    videoRef.current.currentTime = 0;
+                    videoRef.current.play().catch(() => {});
+                }
+            }}
+            onMouseLeave={() => {
+                setIsHovered(false);
+                if (hasVideo && videoRef.current) {
+                    videoRef.current.pause();
+                }
+            }}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
@@ -85,8 +98,8 @@ export default function ProductCard({ product, className, priority = false }) {
                         style={{ zIndex: 10 }}
                     />
 
-                    {/* Second Image on Hover */}
-                    {product.images && product.images.length > 1 && (
+                    {/* Second Image on Hover (only if no video) */}
+                    {!hasVideo && product.images && product.images.length > 1 && (
                         <div
                             className={`absolute inset-0 transition-opacity duration-300 ${isHovered ? 'opacity-100' : 'opacity-0'}`}
                             style={{ zIndex: 5 }}
@@ -100,6 +113,29 @@ export default function ProductCard({ product, className, priority = false }) {
                                 priority={false}
                             />
                         </div>
+                    )}
+
+                    {/* Video Preview on Hover (for presets) */}
+                    {hasVideo && (
+                        <>
+                            <video
+                                ref={videoRef}
+                                src={product.previewVideoUrl}
+                                className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-300 ${isHovered ? 'opacity-100' : 'opacity-0'}`}
+                                style={{ zIndex: 5 }}
+                                muted
+                                loop
+                                playsInline
+                                preload="none"
+                            />
+                            {/* Video indicator badge */}
+                            {!isHovered && (
+                                <div className="absolute right-2 bottom-2 z-20 flex items-center gap-1 bg-black/60 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-1 rounded-full">
+                                    <Play className="h-3 w-3 fill-white" />
+                                    Preview
+                                </div>
+                            )}
+                        </>
                     )}
 
                     {/* Featured Badge */}

@@ -21,7 +21,10 @@ import {
     Save,
     ImagePlus,
     Loader2,
-    Star
+    Star,
+    Video,
+    Film,
+    FileDown
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -65,6 +68,12 @@ const initialFormState = {
     images: [], // Multiple images support
     featured: false,
     specifications: {},
+    previewVideoUrl: '',
+    previewVideoPath: '',
+    previewVideoThumbnailUrl: '',
+    previewVideoThumbnailPath: '',
+    dngFileUrl: '',
+    dngFilePath: '',
 };
 
 export default function AdminProductsPage() {
@@ -72,6 +81,9 @@ export default function AdminProductsPage() {
     const searchParams = useSearchParams();
     const { user, loading: authLoading, isAdmin } = useAuth();
     const fileInputRef = useRef(null);
+    const videoInputRef = useRef(null);
+    const videoThumbnailInputRef = useRef(null);
+    const dngInputRef = useRef(null);
 
     // State
     const [products, setProducts] = useState([]);
@@ -87,6 +99,9 @@ export default function AdminProductsPage() {
     const [formErrors, setFormErrors] = useState({});
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [uploadingImage, setUploadingImage] = useState(false);
+    const [uploadingVideo, setUploadingVideo] = useState(false);
+    const [uploadingVideoThumbnail, setUploadingVideoThumbnail] = useState(false);
+    const [uploadingDng, setUploadingDng] = useState(false);
 
     // Redirect if not admin
     useEffect(() => {
@@ -186,6 +201,12 @@ export default function AdminProductsPage() {
             canvaLink: product.canvaLink || '',
             featured: product.featured || false,
             specifications: product.specifications || {},
+            previewVideoUrl: product.previewVideoUrl || '',
+            previewVideoPath: product.previewVideoPath || '',
+            previewVideoThumbnailUrl: product.previewVideoThumbnailUrl || '',
+            previewVideoThumbnailPath: product.previewVideoThumbnailPath || '',
+            dngFileUrl: product.dngFileUrl || '',
+            dngFilePath: product.dngFilePath || '',
         });
         setFormErrors({});
         setShowModal(true);
@@ -295,6 +316,118 @@ export default function AdminProductsPage() {
         */
     };
 
+    // Handle video preview upload
+    const handleVideoUpload = async (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        const validTypes = ['video/mp4', 'video/webm', 'video/quicktime'];
+        if (!validTypes.includes(file.type)) {
+            toast.error({ title: 'Please upload an MP4, WebM, or MOV video file' });
+            return;
+        }
+        if (file.size > 50 * 1024 * 1024) {
+            toast.error({ title: 'Video file must be under 50MB' });
+            return;
+        }
+
+        setUploadingVideo(true);
+        try {
+            const result = await uploadFile(file, 'presets/videos');
+            if (result.success) {
+                setFormData(prev => ({
+                    ...prev,
+                    previewVideoUrl: result.url,
+                    previewVideoPath: result.publicId || '',
+                }));
+                toast.success({ title: 'Video preview uploaded!' });
+            } else {
+                throw new Error(result.error);
+            }
+        } catch (error) {
+            console.error('Video upload error:', error);
+            toast.error({ title: 'Failed to upload video' });
+        } finally {
+            setUploadingVideo(false);
+            if (videoInputRef.current) videoInputRef.current.value = '';
+        }
+    };
+
+    // Handle video thumbnail upload
+    const handleVideoThumbnailUpload = async (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+        if (!validTypes.includes(file.type)) {
+            toast.error({ title: 'Please upload an image file (JPEG, PNG, WEBP, or GIF)' });
+            return;
+        }
+        if (file.size > 5 * 1024 * 1024) {
+            toast.error({ title: 'Thumbnail image file must be under 5MB' });
+            return;
+        }
+
+        setUploadingVideoThumbnail(true);
+        try {
+            const result = await uploadFile(file, 'presets/thumbnails');
+            if (result.success) {
+                setFormData(prev => ({
+                    ...prev,
+                    previewVideoThumbnailUrl: result.url,
+                    previewVideoThumbnailPath: result.publicId || '',
+                }));
+                toast.success({ title: 'Video thumbnail uploaded!' });
+            } else {
+                throw new Error(result.error);
+            }
+        } catch (error) {
+            console.error('Video thumbnail upload error:', error);
+            toast.error({ title: 'Failed to upload video thumbnail' });
+        } finally {
+            setUploadingVideoThumbnail(false);
+            if (videoThumbnailInputRef.current) videoThumbnailInputRef.current.value = '';
+        }
+    };
+
+    // Handle DNG file upload
+    const handleDngUpload = async (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        // DNG files might have various MIME types
+        const fileName = file.name.toLowerCase();
+        if (!fileName.endsWith('.dng')) {
+            toast.error({ title: 'Please upload a .DNG file' });
+            return;
+        }
+        if (file.size > 100 * 1024 * 1024) {
+            toast.error({ title: 'DNG file must be under 100MB' });
+            return;
+        }
+
+        setUploadingDng(true);
+        try {
+            const result = await uploadFile(file, 'presets/dng');
+            if (result.success) {
+                setFormData(prev => ({
+                    ...prev,
+                    dngFileUrl: result.url,
+                    dngFilePath: result.publicId || '',
+                }));
+                toast.success({ title: `DNG file uploaded! (${(file.size / 1024 / 1024).toFixed(1)} MB)` });
+            } else {
+                throw new Error(result.error);
+            }
+        } catch (error) {
+            console.error('DNG upload error:', error);
+            toast.error({ title: 'Failed to upload DNG file' });
+        } finally {
+            setUploadingDng(false);
+            if (dngInputRef.current) dngInputRef.current.value = '';
+        }
+    };
+
     // Validate form
     const validateForm = () => {
         const errors = {};
@@ -340,6 +473,12 @@ export default function AdminProductsPage() {
                 canvaLink: formData.canvaLink,
                 featured: formData.featured,
                 specifications: formData.specifications,
+                previewVideoUrl: formData.previewVideoUrl || null,
+                previewVideoPath: formData.previewVideoPath || null,
+                previewVideoThumbnailUrl: formData.previewVideoThumbnailUrl || null,
+                previewVideoThumbnailPath: formData.previewVideoThumbnailPath || null,
+                dngFileUrl: formData.dngFileUrl || null,
+                dngFilePath: formData.dngFilePath || null,
             };
 
             let result;
@@ -752,6 +891,170 @@ export default function AdminProductsPage() {
                                         <span className="text-gray-300">Featured Product</span>
                                     </label>
                                 </div>
+
+                                {/* === Preset-Specific Uploads (only for lightroom-templates) === */}
+                                {formData.category === 'lightroom-templates' && (
+                                    <div className="space-y-4 border-t border-gray-700 pt-4">
+                                        <div className="flex items-center gap-2 mb-2">
+                                            <Film className="h-5 w-5 text-cyan-400" />
+                                            <h3 className="text-sm font-bold text-cyan-400 uppercase tracking-wider">Preset Files</h3>
+                                        </div>
+
+                                        {/* Video Preview & Thumbnail Upload Row */}
+                                        <div className="grid gap-4 sm:grid-cols-2">
+                                            {/* Video Preview Upload */}
+                                            <div>
+                                                <Label className="text-gray-300">Video Preview (5-sec, MP4/WebM)</Label>
+                                                <div className="mt-2">
+                                                    {formData.previewVideoUrl ? (
+                                                        <div className="relative rounded-lg overflow-hidden bg-gray-800 border border-gray-700 aspect-video">
+                                                            <video
+                                                                src={formData.previewVideoUrl}
+                                                                className="w-full h-full object-cover"
+                                                                controls
+                                                                muted
+                                                                loop
+                                                            />
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => setFormData(prev => ({ ...prev, previewVideoUrl: '', previewVideoPath: '' }))}
+                                                                className="absolute right-2 top-2 rounded-full bg-red-600 p-1 text-white hover:bg-red-700 transition-colors z-10"
+                                                            >
+                                                                <X className="h-3 w-3" />
+                                                            </button>
+                                                        </div>
+                                                    ) : (
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => videoInputRef.current?.click()}
+                                                            disabled={uploadingVideo}
+                                                            className="flex aspect-video w-full items-center justify-center rounded-lg border-2 border-dashed border-gray-700 bg-gray-800/50 text-gray-400 hover:border-cyan-500 hover:text-cyan-400 transition-colors"
+                                                        >
+                                                            {uploadingVideo ? (
+                                                                <Loader2 className="h-8 w-8 animate-spin" />
+                                                            ) : (
+                                                                <div className="text-center">
+                                                                    <Video className="mx-auto h-6 w-6 mb-1 text-cyan-400" />
+                                                                    <span className="text-xs">Upload Video</span>
+                                                                    <p className="text-[10px] text-gray-500 mt-0.5">MP4, WebM • Max 50MB</p>
+                                                                </div>
+                                                            )}
+                                                        </button>
+                                                    )}
+                                                    <input
+                                                        ref={videoInputRef}
+                                                        type="file"
+                                                        accept="video/mp4,video/webm,video/quicktime"
+                                                        onChange={handleVideoUpload}
+                                                        className="hidden"
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            {/* Video Thumbnail Upload */}
+                                            <div>
+                                                <Label className="text-gray-300">Video Thumbnail Image</Label>
+                                                <div className="mt-2">
+                                                    {formData.previewVideoThumbnailUrl ? (
+                                                        <div className="relative rounded-lg overflow-hidden bg-gray-800 border border-gray-700 aspect-video">
+                                                            <Image
+                                                                src={formData.previewVideoThumbnailUrl}
+                                                                alt="Video Thumbnail"
+                                                                fill
+                                                                className="object-cover"
+                                                                unoptimized={true}
+                                                                priority={true}
+                                                                style={{ opacity: 1 }}
+                                                            />
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => setFormData(prev => ({ ...prev, previewVideoThumbnailUrl: '', previewVideoThumbnailPath: '' }))}
+                                                                className="absolute right-2 top-2 rounded-full bg-red-600 p-1 text-white hover:bg-red-700 transition-colors z-10"
+                                                            >
+                                                                <X className="h-3 w-3" />
+                                                            </button>
+                                                        </div>
+                                                    ) : (
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => videoThumbnailInputRef.current?.click()}
+                                                            disabled={uploadingVideoThumbnail}
+                                                            className="flex aspect-video w-full items-center justify-center rounded-lg border-2 border-dashed border-gray-700 bg-gray-800/50 text-gray-400 hover:border-cyan-500 hover:text-cyan-400 transition-colors"
+                                                        >
+                                                            {uploadingVideoThumbnail ? (
+                                                                <Loader2 className="h-8 w-8 animate-spin" />
+                                                            ) : (
+                                                                <div className="text-center">
+                                                                    <ImagePlus className="mx-auto h-6 w-6 mb-1 text-cyan-400" />
+                                                                    <span className="text-xs">Upload Thumbnail</span>
+                                                                    <p className="text-[10px] text-gray-500 mt-0.5">JPEG, PNG • Max 5MB</p>
+                                                                </div>
+                                                            )}
+                                                        </button>
+                                                    )}
+                                                    <input
+                                                        ref={videoThumbnailInputRef}
+                                                        type="file"
+                                                        accept="image/*"
+                                                        onChange={handleVideoThumbnailUpload}
+                                                        className="hidden"
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* DNG File Upload */}
+                                        <div>
+                                            <Label className="text-gray-300">DNG Preset File</Label>
+                                            <div className="mt-2">
+                                                {formData.dngFileUrl ? (
+                                                    <div className="flex items-center gap-3 p-3 rounded-lg bg-gray-800 border border-green-700/50">
+                                                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-green-600/20 text-green-400">
+                                                            <FileDown className="h-5 w-5" />
+                                                        </div>
+                                                        <div className="flex-1 min-w-0">
+                                                            <p className="text-sm font-medium text-green-400">DNG File Uploaded ✓</p>
+                                                            <p className="text-xs text-gray-500 truncate">{formData.dngFileUrl.split('/').pop()}</p>
+                                                        </div>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => setFormData(prev => ({ ...prev, dngFileUrl: '', dngFilePath: '' }))}
+                                                            className="text-red-400 hover:text-red-300 p-1"
+                                                        >
+                                                            <X className="h-4 w-4" />
+                                                        </button>
+                                                    </div>
+                                                ) : (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => dngInputRef.current?.click()}
+                                                        disabled={uploadingDng}
+                                                        className="flex w-full items-center justify-center gap-3 p-4 rounded-lg border-2 border-dashed border-gray-700 bg-gray-800/50 text-gray-400 hover:border-cyan-500 hover:text-cyan-400 transition-colors"
+                                                    >
+                                                        {uploadingDng ? (
+                                                            <Loader2 className="h-6 w-6 animate-spin" />
+                                                        ) : (
+                                                            <>
+                                                                <FileDown className="h-6 w-6" />
+                                                                <div className="text-left">
+                                                                    <span className="block">Upload DNG Preset File</span>
+                                                                    <span className="text-xs text-gray-500">.dng • Max 100MB • Sent via email to buyer</span>
+                                                                </div>
+                                                            </>
+                                                        )}
+                                                    </button>
+                                                )}
+                                                <input
+                                                    ref={dngInputRef}
+                                                    type="file"
+                                                    accept=".dng"
+                                                    onChange={handleDngUpload}
+                                                    className="hidden"
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
 
                                 {/* Submit Button */}
                                 <div className="flex gap-3 pt-4">

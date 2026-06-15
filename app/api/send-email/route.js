@@ -11,7 +11,8 @@ import {
     sendAdminOrderNotification,
     sendWelcomeEmail,
     sendCustomRequestNotification,
-    sendCustomQuoteEmail
+    sendCustomQuoteEmail,
+    sendPresetDeliveryEmail
 } from '@/lib/email';
 
 export async function POST(request) {
@@ -85,6 +86,16 @@ export async function POST(request) {
                     result = await sendCustomQuoteEmail(body.request, body.price);
                 } else {
                     result = { success: false, error: 'Missing request data or price for custom quote email' };
+                }
+                break;
+
+            case 'preset_delivery':
+                // Send preset delivery email with DNG files attached as ZIP
+                console.log('📧 Sending preset delivery to:', order?.userEmail, 'Files:', body.presetFiles?.length);
+                if (order && body.presetFiles && body.presetFiles.length > 0) {
+                    result = await sendPresetDeliveryEmail(order, body.presetFiles);
+                } else {
+                    result = { success: false, error: 'Missing order data or preset files for delivery' };
                 }
                 break;
 

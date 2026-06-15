@@ -79,6 +79,9 @@ export async function POST(request) {
             success: true,
             url: result.secure_url,
             publicId: result.public_id,
+            resourceType: result.resource_type, // 'image', 'video', or 'raw'
+            format: result.format, // 'jpg', 'mp4', 'dng', etc.
+            bytes: result.bytes,
         });
     } catch (error) {
         console.error('Upload API Fatal Error:', error);
