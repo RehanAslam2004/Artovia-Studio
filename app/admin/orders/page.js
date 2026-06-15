@@ -263,10 +263,20 @@ export default function AdminOrdersPage() {
                 // Check if this order contains preset products (has DNG files)
                 const presetFiles = [];
                 for (const link of validLinks) {
-                    // If the link URL contains 'dng' or 'presets/dng', it's a preset file
-                    if (link.url && (link.url.toLowerCase().includes('.dng') || link.url.includes('presets/dng'))) {
+                    // Check if it's a preset file (ends with .dng, contains .dng, is in presets/dng, or has .dng in the name)
+                    const isDng = link.url && (
+                        link.url.toLowerCase().includes('.dng') || 
+                        link.url.toLowerCase().includes('presets/dng') ||
+                        (link.name && link.name.toLowerCase().endsWith('.dng'))
+                    );
+                    if (isDng) {
+                        const baseName = link.name.toLowerCase().endsWith('.dng') 
+                            ? link.name.slice(0, -4) 
+                            : link.name;
+                        // Sanitize filename for ZIP compatibility (replace Windows forbidden characters with '-')
+                        const cleanName = `${baseName.replace(/[\\/:*?"<>|]/g, '-').replace(/\s+/g, ' ').trim()}.dng`;
                         presetFiles.push({
-                            name: link.name.endsWith('.dng') ? link.name : `${link.name}.dng`,
+                            name: cleanName,
                             url: link.url
                         });
                     }
