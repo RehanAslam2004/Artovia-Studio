@@ -144,7 +144,7 @@ export default function Footer() {
                         </p>
 
                         <div className="flex gap-2 opacity-70 grayscale hover:grayscale-0 transition-all">
-                            {['JazzCash', 'EasyPaisa', 'NayaPay', 'Bank'].map((method) => (
+                            {['EasyPaisa', 'NayaPay'].map((method) => (
                                 <span key={method} className="px-2 py-1 text-[10px] font-bold bg-white rounded border border-pink-100 text-gray-500">
                                     {method}
                                 </span>

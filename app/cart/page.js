@@ -157,13 +157,7 @@ export default function CartPage() {
                             </p>
                             <div className="flex flex-wrap gap-2">
                                 <span className="rounded bg-gray-100 px-2 py-1 text-xs text-gray-600 dark:bg-gray-800 dark:text-gray-400">
-                                    JazzCash
-                                </span>
-                                <span className="rounded bg-gray-100 px-2 py-1 text-xs text-gray-600 dark:bg-gray-800 dark:text-gray-400">
                                     EasyPaisa
-                                </span>
-                                <span className="rounded bg-gray-100 px-2 py-1 text-xs text-gray-600 dark:bg-gray-800 dark:text-gray-400">
-                                    Bank Transfer
                                 </span>
                                 <span className="rounded bg-gray-100 px-2 py-1 text-xs text-gray-600 dark:bg-gray-800 dark:text-gray-400">
                                     NayaPay

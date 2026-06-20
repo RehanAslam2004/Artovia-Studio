@@ -39,15 +39,7 @@ import { formatPrice, isValidEmail, isValidPakistaniPhone } from '@/lib/utils';
 import PointsCelebration from '@/components/PointsCelebration';
 
 const paymentMethods = [
-    {
-        id: 'jazzcash',
-        name: 'JazzCash',
-        icon: Smartphone,
-        color: 'bg-red-500',
-        instructions: 'JazzCash payments are currently unavailable.',
-        disabled: true,
-        badge: 'Coming Soon',
-    },
+
     {
         id: 'easypaisa',
         name: 'EasyPaisa',
@@ -57,13 +49,15 @@ const paymentMethods = [
         qrCode: '/images/easypaisa-qr.jpeg',
     },
     {
-        id: 'sadapay',
-        name: 'SadaPay',
-        icon: Building,
-        color: 'bg-purple-500',
-        instructions: 'Send the payment to the IBAN below, then enter the Transaction ID.',
-        iban: 'PK96SADA0000003191946061',
+        id: 'nayapay',
+        name: 'NayaPay',
+        icon: Smartphone,
+        color: 'bg-emerald-600',
+        instructions: 'Transfer the amount to the NayaPay IBAN below, then enter the Transaction ID.',
+        iban: 'PK35 NAYA 1234 5031 9194 6061',
+        accountTitle: 'Ayesha Khan',
     },
+
 ];
 
 export default function CheckoutPage() {
@@ -614,7 +608,7 @@ export default function CheckoutPage() {
                                                             )}
                                                         </button>
                                                     </div>
-                                                    <p className="text-xs text-gray-500 mt-2">Account: Artovia Studio — SadaPay</p>
+                                                    <p className="text-xs text-gray-500 mt-2">Account: {selectedMethod.accountTitle || 'Ayesha Khan'}</p>
                                                 </div>
                                             )}
                                         </motion.div>
@@ -767,7 +761,7 @@ export default function CheckoutPage() {
                                                 </span>
                                             )}
                                         </div>
-                                        
+
                                         {/* Product Discounts */}
                                         {getOriginalSubtotal() > getTotal() && (
                                             <div className="flex justify-between text-sm">
