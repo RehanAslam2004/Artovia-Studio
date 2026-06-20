@@ -39,7 +39,6 @@ import { formatPrice, isValidEmail, isValidPakistaniPhone } from '@/lib/utils';
 import PointsCelebration from '@/components/PointsCelebration';
 
 const paymentMethods = [
-
     {
         id: 'easypaisa',
         name: 'EasyPaisa',
@@ -47,17 +46,7 @@ const paymentMethods = [
         color: 'bg-green-500',
         instructions: 'Scan the QR code below to pay, then enter the Transaction ID.',
         qrCode: '/images/easypaisa-qr.jpeg',
-    },
-    {
-        id: 'nayapay',
-        name: 'NayaPay',
-        icon: Smartphone,
-        color: 'bg-emerald-600',
-        instructions: 'Transfer the amount to the NayaPay IBAN below, then enter the Transaction ID.',
-        iban: 'PK35 NAYA 1234 5031 9194 6061',
-        accountTitle: 'Ayesha Khan',
-    },
-
+    }
 ];
 
 export default function CheckoutPage() {

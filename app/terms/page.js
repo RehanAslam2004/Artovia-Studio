@@ -74,7 +74,7 @@ export default function TermsPage() {
                             <h2 className="text-xl font-bold text-gray-900 mb-3">4. Payments</h2>
                             <p className="text-gray-600 leading-relaxed">
                                 All prices are listed in Pakistani Rupees (PKR). We accept payments via
-                                EasyPaisa and NayaPay. Payment must be confirmed
+                                EasyPaisa. Payment must be confirmed
                                 before digital files are released. Orders are processed manually; please allow
                                 up to 24 hours for payment verification and file delivery.
                             </p>

@@ -384,7 +384,6 @@ export default function AdminOrdersPage() {
                                     <option value="">All Payments</option>
                                     <option value="jazzcash">JazzCash</option>
                                     <option value="easypaisa">EasyPaisa</option>
-                                    <option value="nayapay">NayaPay</option>
                                     <option value="bank_transfer">Bank Transfer</option>
                                 </select>
                             </div>

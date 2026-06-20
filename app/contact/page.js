@@ -273,7 +273,7 @@ export default function ContactPage() {
                         {[
                             { q: 'How do I receive my designs?', a: 'After payment confirmation, you will receive download links via email within 24 hours.' },
                             { q: 'Can I request custom designs?', a: 'Yes! Email us with your requirements and we will provide a quote.' },
-                            { q: 'What payment methods do you accept?', a: 'We currently accept EasyPaisa and NayaPay for payments.' },
+                            { q: 'What payment methods do you accept?', a: 'We currently accept EasyPaisa for payments.' },
                         ].map((faq, index) => (
                             <motion.div
                                 key={index}

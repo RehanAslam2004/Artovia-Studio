@@ -159,9 +159,6 @@ export default function CartPage() {
                                 <span className="rounded bg-gray-100 px-2 py-1 text-xs text-gray-600 dark:bg-gray-800 dark:text-gray-400">
                                     EasyPaisa
                                 </span>
-                                <span className="rounded bg-gray-100 px-2 py-1 text-xs text-gray-600 dark:bg-gray-800 dark:text-gray-400">
-                                    NayaPay
-                                </span>
                             </div>
                         </div>
 

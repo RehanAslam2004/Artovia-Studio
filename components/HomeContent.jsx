@@ -63,7 +63,7 @@ const features = [
     {
         icon: Shield,
         title: 'Secure Payment',
-        description: 'Pay via EasyPaisa or NayaPay — fast, safe, and easy to use',
+        description: 'Pay via EasyPaisa — fast, safe, and easy to use',
     },
     {
         icon: Zap,
@@ -353,7 +353,7 @@ export default function HomeContent({ featuredProducts }) {
                     >
                         <h2 className="text-2xl font-bold sm:text-3xl">Why Choose Us?</h2>
                         <p className="mt-3 text-pink-100">
-                            We're committed to providing the best experience
+                            We&apos;re committed to providing the best experience
                         </p>
                     </motion.div>
 
