@@ -16,6 +16,10 @@ import {
     sendBookmarkDeliveryEmail
 } from '@/lib/email';
 
+// Allow up to 60 seconds — needed for downloading PDF/DNG files from Cloudinary
+// and sending via Gmail SMTP (Vercel default is only 10s which causes silent timeouts)
+export const maxDuration = 60;
+
 export async function POST(request) {
     try {
         const body = await request.json();

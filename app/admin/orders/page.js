@@ -302,7 +302,7 @@ export default function AdminOrdersPage() {
                 if (presetFiles.length > 0) {
                     // Send preset delivery email with DNG attachment
                     console.log('📧 Sending preset delivery email with', presetFiles.length, 'DNG files');
-                    await fetch('/api/send-email', {
+                    const emailRes = await fetch('/api/send-email', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
@@ -311,11 +311,16 @@ export default function AdminOrdersPage() {
                             presetFiles: presetFiles
                         })
                     });
-                    toast.success({ title: 'Order approved! Presets sent via email with DNG attached 📸' });
+                    const emailData = await emailRes.json();
+                    if (emailData.success) {
+                        toast.success({ title: 'Order approved! Presets sent via email with DNG attached 📸' });
+                    } else {
+                        toast.error({ title: `Order approved, but email failed: ${emailData.error || 'Unknown error'}` });
+                    }
                 } else if (pdfFiles.length > 0) {
                     // Send bookmark delivery email with PDF attached directly
                     console.log('📧 Sending bookmark delivery email with', pdfFiles.length, 'PDF file(s)');
-                    await fetch('/api/send-email', {
+                    const emailRes = await fetch('/api/send-email', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
@@ -324,10 +329,15 @@ export default function AdminOrdersPage() {
                             pdfFiles: pdfFiles
                         })
                     });
-                    toast.success({ title: 'Order approved! Bookmark PDF sent via email 🔖' });
+                    const emailData = await emailRes.json();
+                    if (emailData.success) {
+                        toast.success({ title: 'Order approved! Bookmark PDF sent via email 🔖' });
+                    } else {
+                        toast.error({ title: `Order approved, but email failed: ${emailData.error || 'Unknown error'}` });
+                    }
                 } else {
                     // Regular approval email with download links
-                    await fetch('/api/send-email', {
+                    const emailRes = await fetch('/api/send-email', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
@@ -336,7 +346,12 @@ export default function AdminOrdersPage() {
                             downloadLinks: validLinks
                         })
                     });
-                    toast.success({ title: 'Order approved and email sent' });
+                    const emailData = await emailRes.json();
+                    if (emailData.success) {
+                        toast.success({ title: 'Order approved and email sent ✅' });
+                    } else {
+                        toast.error({ title: `Order approved, but email failed: ${emailData.error || 'Unknown error'}` });
+                    }
                 }
 
                 // Update local state
