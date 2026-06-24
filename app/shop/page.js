@@ -45,6 +45,7 @@ const defaultCategories = [
     { id: 'social-media', name: 'Social Media' },
     { id: 'business', name: 'Business' },
     { id: 'occasion-cards', name: 'Occasion Cards' },
+    { id: 'bookmarks', name: 'Bookmarks' },
 ];
 
 import { Suspense } from 'react';

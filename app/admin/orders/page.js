@@ -260,8 +260,9 @@ export default function AdminOrdersPage() {
             const result = await approveOrder(approvalOrder.id, validLinks);
 
             if (result.success) {
-                // Check if this order contains preset products (has DNG files)
+                // Check if this order contains preset products (has DNG files) or bookmark products (has PDF files)
                 const presetFiles = [];
+                const pdfFiles = [];
                 for (const link of validLinks) {
                     // Check if it's a preset file (ends with .dng, contains .dng, is in presets/dng, or has .dng in the name)
                     const isDng = link.url && (
@@ -269,6 +270,13 @@ export default function AdminOrdersPage() {
                         link.url.toLowerCase().includes('presets/dng') ||
                         (link.name && link.name.toLowerCase().endsWith('.dng'))
                     );
+                    // Check if it's a bookmark PDF file
+                    const isPdf = !isDng && link.url && (
+                        link.url.toLowerCase().includes('.pdf') ||
+                        link.url.toLowerCase().includes('bookmarks/pdf') ||
+                        (link.name && link.name.toLowerCase().endsWith('.pdf'))
+                    );
+
                     if (isDng) {
                         const baseName = link.name.toLowerCase().endsWith('.dng') 
                             ? link.name.slice(0, -4) 
@@ -276,6 +284,15 @@ export default function AdminOrdersPage() {
                         // Sanitize filename for ZIP compatibility (replace Windows forbidden characters with '-')
                         const cleanName = `${baseName.replace(/[\\/:*?"<>|]/g, '-').replace(/\s+/g, ' ').trim()}.dng`;
                         presetFiles.push({
+                            name: cleanName,
+                            url: link.url
+                        });
+                    } else if (isPdf) {
+                        const baseName = link.name.toLowerCase().endsWith('.pdf')
+                            ? link.name
+                            : `${link.name}.pdf`;
+                        const cleanName = baseName.replace(/[\\/:*?"<>|]/g, '-').replace(/\s+/g, ' ').trim();
+                        pdfFiles.push({
                             name: cleanName,
                             url: link.url
                         });
@@ -295,6 +312,19 @@ export default function AdminOrdersPage() {
                         })
                     });
                     toast.success({ title: 'Order approved! Presets sent via email with DNG attached 📸' });
+                } else if (pdfFiles.length > 0) {
+                    // Send bookmark delivery email with PDF attached directly
+                    console.log('📧 Sending bookmark delivery email with', pdfFiles.length, 'PDF file(s)');
+                    await fetch('/api/send-email', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            type: 'bookmark_delivery',
+                            order: approvalOrder,
+                            pdfFiles: pdfFiles
+                        })
+                    });
+                    toast.success({ title: 'Order approved! Bookmark PDF sent via email 🔖' });
                 } else {
                     // Regular approval email with download links
                     await fetch('/api/send-email', {
@@ -768,18 +798,23 @@ export default function AdminOrdersPage() {
                                                                             const result = await getProductById(productId);
                                                                             if (result.success && result.product) {
                                                                                 const p = result.product;
-                                                                                // Preset check: dngFileUrl first, then fallback chain
-                                                                                const fetchedLink = p.dngFileUrl || p.downloadUrl || p.canvaLink || (p.imageUrl?.includes('cloudinary') ? p.imageUrl : null);
+                                                                                // Priority: bookmark PDF > DNG preset > download URL > canva link > image
+                                                                                const isBookmark = Boolean(p.bookmarkPdfUrl);
                                                                                 const isPreset = Boolean(p.dngFileUrl);
+                                                                                const fetchedLink = p.bookmarkPdfUrl || p.dngFileUrl || p.downloadUrl || p.canvaLink || (p.imageUrl?.includes('cloudinary') ? p.imageUrl : null);
 
                                                                                 if (fetchedLink) {
                                                                                     updateDownloadLink(index, 'url', fetchedLink);
                                                                                     updateDownloadLink(index, 'type', 'file');
+                                                                                    // Auto-set name with .pdf extension for bookmarks
+                                                                                    if (isBookmark && !downloadLinks[index]?.name?.endsWith('.pdf')) {
+                                                                                        updateDownloadLink(index, 'name', `${p.name || 'Bookmark'}.pdf`);
+                                                                                    }
                                                                                     // Auto-set name with .dng extension for presets
-                                                                                    if (isPreset && !downloadLinks[index]?.name?.endsWith('.dng')) {
+                                                                                    if (isPreset && !isBookmark && !downloadLinks[index]?.name?.endsWith('.dng')) {
                                                                                         updateDownloadLink(index, 'name', `${p.name || 'Preset'}.dng`);
                                                                                     }
-                                                                                    toast.success({ title: isPreset ? "DNG preset loaded! 📸" : "Fetched from product!" });
+                                                                                    toast.success({ title: isBookmark ? "Bookmark PDF loaded! 🔖" : isPreset ? "DNG preset loaded! 📸" : "Fetched from product!" });
                                                                                 } else {
                                                                                     toast.error({ title: "No link/file found in product." });
                                                                                 }

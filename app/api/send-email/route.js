@@ -12,7 +12,8 @@ import {
     sendWelcomeEmail,
     sendCustomRequestNotification,
     sendCustomQuoteEmail,
-    sendPresetDeliveryEmail
+    sendPresetDeliveryEmail,
+    sendBookmarkDeliveryEmail
 } from '@/lib/email';
 
 export async function POST(request) {
@@ -96,6 +97,16 @@ export async function POST(request) {
                     result = await sendPresetDeliveryEmail(order, body.presetFiles);
                 } else {
                     result = { success: false, error: 'Missing order data or preset files for delivery' };
+                }
+                break;
+
+            case 'bookmark_delivery':
+                // Send bookmark delivery email with PDF attached directly
+                console.log('📧 Sending bookmark delivery to:', order?.userEmail, 'Files:', body.pdfFiles?.length);
+                if (order && body.pdfFiles && body.pdfFiles.length > 0) {
+                    result = await sendBookmarkDeliveryEmail(order, body.pdfFiles);
+                } else {
+                    result = { success: false, error: 'Missing order data or PDF files for bookmark delivery' };
                 }
                 break;
 

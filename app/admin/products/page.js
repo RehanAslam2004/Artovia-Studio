@@ -54,6 +54,7 @@ const categories = [
     'social-media',
     'business',
     'occasion-cards',
+    'bookmarks',
     'other'
 ];
 
@@ -74,6 +75,8 @@ const initialFormState = {
     previewVideoThumbnailPath: '',
     dngFileUrl: '',
     dngFilePath: '',
+    bookmarkPdfUrl: '',
+    bookmarkPdfPath: '',
 };
 
 export default function AdminProductsPage() {
@@ -84,6 +87,7 @@ export default function AdminProductsPage() {
     const videoInputRef = useRef(null);
     const videoThumbnailInputRef = useRef(null);
     const dngInputRef = useRef(null);
+    const bookmarkPdfInputRef = useRef(null);
 
     // State
     const [products, setProducts] = useState([]);
@@ -102,6 +106,7 @@ export default function AdminProductsPage() {
     const [uploadingVideo, setUploadingVideo] = useState(false);
     const [uploadingVideoThumbnail, setUploadingVideoThumbnail] = useState(false);
     const [uploadingDng, setUploadingDng] = useState(false);
+    const [uploadingBookmarkPdf, setUploadingBookmarkPdf] = useState(false);
 
     // Redirect if not admin
     useEffect(() => {
@@ -207,6 +212,8 @@ export default function AdminProductsPage() {
             previewVideoThumbnailPath: product.previewVideoThumbnailPath || '',
             dngFileUrl: product.dngFileUrl || '',
             dngFilePath: product.dngFilePath || '',
+            bookmarkPdfUrl: product.bookmarkPdfUrl || '',
+            bookmarkPdfPath: product.bookmarkPdfPath || '',
         });
         setFormErrors({});
         setShowModal(true);
@@ -428,6 +435,43 @@ export default function AdminProductsPage() {
         }
     };
 
+    // Handle Bookmark PDF upload
+    const handleBookmarkPdfUpload = async (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        const fileName = file.name.toLowerCase();
+        if (!fileName.endsWith('.pdf')) {
+            toast.error({ title: 'Please upload a .PDF file' });
+            return;
+        }
+        if (file.size > 50 * 1024 * 1024) {
+            toast.error({ title: 'PDF file must be under 50MB' });
+            return;
+        }
+
+        setUploadingBookmarkPdf(true);
+        try {
+            const result = await uploadFile(file, 'bookmarks/pdf');
+            if (result.success) {
+                setFormData(prev => ({
+                    ...prev,
+                    bookmarkPdfUrl: result.url,
+                    bookmarkPdfPath: result.publicId || '',
+                }));
+                toast.success({ title: `Bookmark PDF uploaded! (${(file.size / 1024 / 1024).toFixed(1)} MB)` });
+            } else {
+                throw new Error(result.error);
+            }
+        } catch (error) {
+            console.error('Bookmark PDF upload error:', error);
+            toast.error({ title: 'Failed to upload Bookmark PDF' });
+        } finally {
+            setUploadingBookmarkPdf(false);
+            if (bookmarkPdfInputRef.current) bookmarkPdfInputRef.current.value = '';
+        }
+    };
+
     // Validate form
     const validateForm = () => {
         const errors = {};
@@ -479,6 +523,8 @@ export default function AdminProductsPage() {
                 previewVideoThumbnailPath: formData.previewVideoThumbnailPath || null,
                 dngFileUrl: formData.dngFileUrl || null,
                 dngFilePath: formData.dngFilePath || null,
+                bookmarkPdfUrl: formData.bookmarkPdfUrl || null,
+                bookmarkPdfPath: formData.bookmarkPdfPath || null,
             };
 
             let result;
@@ -1049,6 +1095,66 @@ export default function AdminProductsPage() {
                                                     type="file"
                                                     accept=".dng"
                                                     onChange={handleDngUpload}
+                                                    className="hidden"
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* === Bookmark-Specific Upload (only for bookmarks) === */}
+                                {formData.category === 'bookmarks' && (
+                                    <div className="space-y-4 border-t border-gray-700 pt-4">
+                                        <div className="flex items-center gap-2 mb-2">
+                                            <FileDown className="h-5 w-5 text-pink-400" />
+                                            <h3 className="text-sm font-bold text-pink-400 uppercase tracking-wider">Bookmark PDF File</h3>
+                                        </div>
+
+                                        <div>
+                                            <Label className="text-gray-300">Bookmark PDF <span className="text-pink-400">(Sent to customer on order confirm)</span></Label>
+                                            <div className="mt-2">
+                                                {formData.bookmarkPdfUrl ? (
+                                                    <div className="flex items-center gap-3 p-3 rounded-lg bg-gray-800 border border-pink-700/50">
+                                                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-pink-600/20 text-pink-400">
+                                                            <FileDown className="h-5 w-5" />
+                                                        </div>
+                                                        <div className="flex-1 min-w-0">
+                                                            <p className="text-sm font-medium text-pink-400">PDF Uploaded ✓</p>
+                                                            <p className="text-xs text-gray-500 truncate">{formData.bookmarkPdfUrl.split('/').pop()}</p>
+                                                        </div>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => setFormData(prev => ({ ...prev, bookmarkPdfUrl: '', bookmarkPdfPath: '' }))}
+                                                            className="text-red-400 hover:text-red-300 p-1"
+                                                        >
+                                                            <X className="h-4 w-4" />
+                                                        </button>
+                                                    </div>
+                                                ) : (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => bookmarkPdfInputRef.current?.click()}
+                                                        disabled={uploadingBookmarkPdf}
+                                                        className="flex w-full items-center justify-center gap-3 p-4 rounded-lg border-2 border-dashed border-gray-700 bg-gray-800/50 text-gray-400 hover:border-pink-500 hover:text-pink-400 transition-colors"
+                                                    >
+                                                        {uploadingBookmarkPdf ? (
+                                                            <Loader2 className="h-6 w-6 animate-spin" />
+                                                        ) : (
+                                                            <>
+                                                                <FileDown className="h-6 w-6" />
+                                                                <div className="text-left">
+                                                                    <span className="block">Upload Bookmark PDF</span>
+                                                                    <span className="text-xs text-gray-500">.pdf • Max 50MB • Attached in email to buyer</span>
+                                                                </div>
+                                                            </>
+                                                        )}
+                                                    </button>
+                                                )}
+                                                <input
+                                                    ref={bookmarkPdfInputRef}
+                                                    type="file"
+                                                    accept=".pdf"
+                                                    onChange={handleBookmarkPdfUpload}
                                                     className="hidden"
                                                 />
                                             </div>
