@@ -270,10 +270,10 @@ export default function AdminOrdersPage() {
                         link.url.toLowerCase().includes('presets/dng') ||
                         (link.name && link.name.toLowerCase().endsWith('.dng'))
                     );
-                    // Check if it's a bookmark PDF file
+                    // Check if it's a bookmark PDF file — check name extension OR bookmarks folder in URL
                     const isPdf = !isDng && link.url && (
-                        link.url.toLowerCase().includes('.pdf') ||
-                        link.url.toLowerCase().includes('bookmarks/pdf') ||
+                        link.url.toLowerCase().includes('bookmarks') ||
+                        link.url.toLowerCase().replace('/raw/upload/', '/').includes('.pdf') ||
                         (link.name && link.name.toLowerCase().endsWith('.pdf'))
                     );
 
@@ -801,7 +801,12 @@ export default function AdminOrdersPage() {
                                                                                 // Priority: bookmark PDF > DNG preset > download URL > canva link > image
                                                                                 const isBookmark = Boolean(p.bookmarkPdfUrl);
                                                                                 const isPreset = Boolean(p.dngFileUrl);
-                                                                                const fetchedLink = p.bookmarkPdfUrl || p.dngFileUrl || p.downloadUrl || p.canvaLink || (p.imageUrl?.includes('cloudinary') ? p.imageUrl : null);
+                                                                                let fetchedLink = p.bookmarkPdfUrl || p.dngFileUrl || p.downloadUrl || p.canvaLink || (p.imageUrl?.includes('cloudinary') ? p.imageUrl : null);
+
+                                                                                // Fix: Cloudinary may store PDFs as image/upload — normalize to raw/upload
+                                                                                if (isBookmark && fetchedLink && fetchedLink.includes('/image/upload/')) {
+                                                                                    fetchedLink = fetchedLink.replace('/image/upload/', '/raw/upload/');
+                                                                                }
 
                                                                                 if (fetchedLink) {
                                                                                     updateDownloadLink(index, 'url', fetchedLink);

@@ -57,18 +57,24 @@ export async function POST(request) {
         console.log('Upload API: Starting Cloudinary upload...');
 
         // Upload to Cloudinary
+        // Determine resource type: PDFs and DNG files must be 'raw' so Cloudinary
+        // stores and serves the actual binary file (not a rendered image preview)
+        const fileName = file.name?.toLowerCase() || '';
+        const isRawFile = fileName.endsWith('.dng') || fileName.endsWith('.pdf') || folder.includes('dng') || folder.includes('pdf');
+        const resourceType = isRawFile ? 'raw' : 'auto';
+
         const result = await new Promise((resolve, reject) => {
             cloudinary.uploader.upload_stream(
                 {
                     folder: `artovia-studio/${folder}`,
-                    resource_type: 'auto',
+                    resource_type: resourceType,
                 },
                 (error, result) => {
                     if (error) {
                         console.error('Cloudinary API Error:', error);
                         reject(error);
                     } else {
-                        console.log('Cloudinary Upload Success:', result.public_id);
+                        console.log('Cloudinary Upload Success:', result.public_id, 'type:', result.resource_type);
                         resolve(result);
                     }
                 }
