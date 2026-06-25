@@ -42,7 +42,7 @@ import {
     approveOrder,
     cancelOrder
 } from '@/lib/orders';
-import { getProductById } from '@/lib/products';
+import { getProductById, uploadFile } from '@/lib/products';
 import {
     formatPrice,
     formatDate,
@@ -218,27 +218,18 @@ export default function AdminOrdersPage() {
         if (!file) return;
 
         setIsUploading(true);
-        const formData = new FormData();
-        formData.append('file', file);
-        formData.append('folder', 'orders'); // Upload to orders folder
-
         try {
-            const response = await fetch('/api/upload', {
-                method: 'POST',
-                body: formData,
-            });
+            const result = await uploadFile(file, 'orders');
 
-            const data = await response.json();
-
-            if (data.success) {
-                updateDownloadLink(index, 'url', data.url);
+            if (result.success) {
+                updateDownloadLink(index, 'url', result.url);
                 toast.success({ title: 'File uploaded successfully' });
             } else {
-                throw new Error(data.error);
+                throw new Error(result.error);
             }
         } catch (error) {
             console.error('Upload error:', error);
-            toast.error({ title: 'Failed to upload file' });
+            toast.error({ title: 'Failed to upload file', description: error.message });
         } finally {
             setIsUploading(false);
         }
