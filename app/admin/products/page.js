@@ -286,13 +286,19 @@ export default function AdminProductsPage() {
                     });
                     toast.success({ title: `Uploaded ${uploadedCount}/${validFiles.length}: ${file.name}` });
                 } else {
-                    toast.error({ title: `Failed: ${file.name}` });
+                    toast.error({
+                        title: `Failed: ${file.name}`,
+                        description: result.error || 'Unknown upload error'
+                    });
                 }
             }
 
         } catch (error) {
             console.error('Upload error:', error);
-            toast.error({ title: 'Failed to upload images' });
+            toast.error({
+                title: 'Failed to upload images',
+                description: error.message
+            });
         } finally {
             setUploadingImage(false);
             // Reset input
@@ -353,7 +359,10 @@ export default function AdminProductsPage() {
             }
         } catch (error) {
             console.error('Video upload error:', error);
-            toast.error({ title: 'Failed to upload video' });
+            toast.error({
+                title: 'Failed to upload video',
+                description: error.message
+            });
         } finally {
             setUploadingVideo(false);
             if (videoInputRef.current) videoInputRef.current.value = '';
@@ -390,7 +399,10 @@ export default function AdminProductsPage() {
             }
         } catch (error) {
             console.error('Video thumbnail upload error:', error);
-            toast.error({ title: 'Failed to upload video thumbnail' });
+            toast.error({
+                title: 'Failed to upload video thumbnail',
+                description: error.message
+            });
         } finally {
             setUploadingVideoThumbnail(false);
             if (videoThumbnailInputRef.current) videoThumbnailInputRef.current.value = '';
@@ -428,7 +440,10 @@ export default function AdminProductsPage() {
             }
         } catch (error) {
             console.error('DNG upload error:', error);
-            toast.error({ title: 'Failed to upload DNG file' });
+            toast.error({
+                title: 'Failed to upload DNG file',
+                description: error.message
+            });
         } finally {
             setUploadingDng(false);
             if (dngInputRef.current) dngInputRef.current.value = '';
@@ -465,7 +480,10 @@ export default function AdminProductsPage() {
             }
         } catch (error) {
             console.error('Bookmark PDF upload error:', error);
-            toast.error({ title: 'Failed to upload Bookmark PDF' });
+            toast.error({
+                title: 'Failed to upload Bookmark PDF',
+                description: error.message
+            });
         } finally {
             setUploadingBookmarkPdf(false);
             if (bookmarkPdfInputRef.current) bookmarkPdfInputRef.current.value = '';
