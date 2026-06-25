@@ -108,6 +108,13 @@ export default function AdminProductsPage() {
     const [uploadingDng, setUploadingDng] = useState(false);
     const [uploadingBookmarkPdf, setUploadingBookmarkPdf] = useState(false);
 
+    // Upload progress states
+    const [uploadProgressImage, setUploadProgressImage] = useState(0);
+    const [uploadProgressVideo, setUploadProgressVideo] = useState(0);
+    const [uploadProgressVideoThumbnail, setUploadProgressVideoThumbnail] = useState(0);
+    const [uploadProgressDng, setUploadProgressDng] = useState(0);
+    const [uploadProgressBookmarkPdf, setUploadProgressBookmarkPdf] = useState(0);
+
     // Redirect if not admin
     useEffect(() => {
         if (!authLoading) {
@@ -272,7 +279,10 @@ export default function AdminProductsPage() {
             // Upload files one-by-one and update state after each
             let uploadedCount = 0;
             for (const file of validFiles) {
-                const result = await uploadFile(file, 'products');
+                setUploadProgressImage(0);
+                const result = await uploadFile(file, 'products', (progress) => {
+                    setUploadProgressImage(progress);
+                });
                 if (result.success) {
                     uploadedCount++;
                     // Update state immediately so image appears in gallery
@@ -345,8 +355,11 @@ export default function AdminProductsPage() {
         }
 
         setUploadingVideo(true);
+        setUploadProgressVideo(0);
         try {
-            const result = await uploadFile(file, 'presets/videos');
+            const result = await uploadFile(file, 'presets/videos', (progress) => {
+                setUploadProgressVideo(progress);
+            });
             if (result.success) {
                 setFormData(prev => ({
                     ...prev,
@@ -385,8 +398,11 @@ export default function AdminProductsPage() {
         }
 
         setUploadingVideoThumbnail(true);
+        setUploadProgressVideoThumbnail(0);
         try {
-            const result = await uploadFile(file, 'presets/thumbnails');
+            const result = await uploadFile(file, 'presets/thumbnails', (progress) => {
+                setUploadProgressVideoThumbnail(progress);
+            });
             if (result.success) {
                 setFormData(prev => ({
                     ...prev,
@@ -426,8 +442,11 @@ export default function AdminProductsPage() {
         }
 
         setUploadingDng(true);
+        setUploadProgressDng(0);
         try {
-            const result = await uploadFile(file, 'presets/dng');
+            const result = await uploadFile(file, 'presets/dng', (progress) => {
+                setUploadProgressDng(progress);
+            });
             if (result.success) {
                 setFormData(prev => ({
                     ...prev,
@@ -466,8 +485,11 @@ export default function AdminProductsPage() {
         }
 
         setUploadingBookmarkPdf(true);
+        setUploadProgressBookmarkPdf(0);
         try {
-            const result = await uploadFile(file, 'bookmarks/pdf');
+            const result = await uploadFile(file, 'bookmarks/pdf', (progress) => {
+                setUploadProgressBookmarkPdf(progress);
+            });
             if (result.success) {
                 setFormData(prev => ({
                     ...prev,
@@ -833,7 +855,10 @@ export default function AdminProductsPage() {
                                             className="flex aspect-video w-full items-center justify-center rounded-lg border-2 border-dashed border-gray-700 bg-gray-800/50 text-gray-400 hover:border-purple-500 hover:text-purple-400 transition-colors"
                                         >
                                             {uploadingImage ? (
-                                                <Loader2 className="h-8 w-8 animate-spin" />
+                                                <div className="flex flex-col items-center justify-center gap-1">
+                                                    <Loader2 className="h-8 w-8 animate-spin text-purple-400" />
+                                                    <span className="text-xs text-purple-400 font-medium">Uploading {uploadProgressImage}%</span>
+                                                </div>
                                             ) : (
                                                 <div className="text-center">
                                                     <ImagePlus className="mx-auto h-8 w-8 mb-2" />
@@ -995,7 +1020,10 @@ export default function AdminProductsPage() {
                                                             className="flex aspect-video w-full items-center justify-center rounded-lg border-2 border-dashed border-gray-700 bg-gray-800/50 text-gray-400 hover:border-cyan-500 hover:text-cyan-400 transition-colors"
                                                         >
                                                             {uploadingVideo ? (
-                                                                <Loader2 className="h-8 w-8 animate-spin" />
+                                                                <div className="flex flex-col items-center justify-center gap-1">
+                                                                    <Loader2 className="h-8 w-8 animate-spin text-cyan-400" />
+                                                                    <span className="text-xs text-cyan-400 font-medium">Uploading {uploadProgressVideo}%</span>
+                                                                </div>
                                                             ) : (
                                                                 <div className="text-center">
                                                                     <Video className="mx-auto h-6 w-6 mb-1 text-cyan-400" />
@@ -1046,7 +1074,10 @@ export default function AdminProductsPage() {
                                                             className="flex aspect-video w-full items-center justify-center rounded-lg border-2 border-dashed border-gray-700 bg-gray-800/50 text-gray-400 hover:border-cyan-500 hover:text-cyan-400 transition-colors"
                                                         >
                                                             {uploadingVideoThumbnail ? (
-                                                                <Loader2 className="h-8 w-8 animate-spin" />
+                                                                <div className="flex flex-col items-center justify-center gap-1">
+                                                                    <Loader2 className="h-8 w-8 animate-spin text-cyan-400" />
+                                                                    <span className="text-xs text-cyan-400 font-medium">Uploading {uploadProgressVideoThumbnail}%</span>
+                                                                </div>
                                                             ) : (
                                                                 <div className="text-center">
                                                                     <ImagePlus className="mx-auto h-6 w-6 mb-1 text-cyan-400" />
@@ -1096,7 +1127,10 @@ export default function AdminProductsPage() {
                                                         className="flex w-full items-center justify-center gap-3 p-4 rounded-lg border-2 border-dashed border-gray-700 bg-gray-800/50 text-gray-400 hover:border-cyan-500 hover:text-cyan-400 transition-colors"
                                                     >
                                                         {uploadingDng ? (
-                                                            <Loader2 className="h-6 w-6 animate-spin" />
+                                                            <div className="flex items-center gap-2">
+                                                                <Loader2 className="h-6 w-6 animate-spin text-cyan-400" />
+                                                                <span className="text-sm font-medium text-cyan-400 animate-pulse">Uploading {uploadProgressDng}%</span>
+                                                            </div>
                                                         ) : (
                                                             <>
                                                                 <FileDown className="h-6 w-6" />
@@ -1156,7 +1190,10 @@ export default function AdminProductsPage() {
                                                         className="flex w-full items-center justify-center gap-3 p-4 rounded-lg border-2 border-dashed border-gray-700 bg-gray-800/50 text-gray-400 hover:border-pink-500 hover:text-pink-400 transition-colors"
                                                     >
                                                         {uploadingBookmarkPdf ? (
-                                                            <Loader2 className="h-6 w-6 animate-spin" />
+                                                            <div className="flex items-center gap-2">
+                                                                <Loader2 className="h-6 w-6 animate-spin text-pink-400" />
+                                                                <span className="text-sm font-medium text-pink-400 animate-pulse">Uploading {uploadProgressBookmarkPdf}%</span>
+                                                            </div>
                                                         ) : (
                                                             <>
                                                                 <FileDown className="h-6 w-6" />

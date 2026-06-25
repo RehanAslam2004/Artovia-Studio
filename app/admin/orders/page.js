@@ -80,6 +80,7 @@ export default function AdminOrdersPage() {
     const [downloadLinks, setDownloadLinks] = useState([{ name: '', url: '', type: 'link' }]);
     const [isApproving, setIsApproving] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
+    const [uploadProgress, setUploadProgress] = useState({});
 
     // Redirect if not admin
     useEffect(() => {
@@ -218,8 +219,11 @@ export default function AdminOrdersPage() {
         if (!file) return;
 
         setIsUploading(true);
+        setUploadProgress(prev => ({ ...prev, [index]: 0 }));
         try {
-            const result = await uploadFile(file, 'orders');
+            const result = await uploadFile(file, 'orders', (progress) => {
+                setUploadProgress(prev => ({ ...prev, [index]: progress }));
+            });
 
             if (result.success) {
                 updateDownloadLink(index, 'url', result.url);
@@ -862,11 +866,16 @@ export default function AdminOrdersPage() {
                                                                     }`}
                                                             >
                                                                 {isUploading ? (
-                                                                    <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                                                                    <>
+                                                                        <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                                                                        {uploadProgress[index] !== undefined ? `Uploading ${uploadProgress[index]}%` : 'Uploading...'}
+                                                                    </>
                                                                 ) : (
-                                                                    <Download className="h-3 w-3 mr-1" />
+                                                                    <>
+                                                                        <Download className="h-3 w-3 mr-1" />
+                                                                        Upload New File
+                                                                    </>
                                                                 )}
-                                                                Upload New File
                                                             </label>
                                                         </div>
                                                     </div>
