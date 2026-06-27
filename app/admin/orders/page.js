@@ -174,15 +174,33 @@ export default function AdminOrdersPage() {
     };
 
     // Open approval modal
-    const openApprovalModal = (order) => {
+    const openApprovalModal = async (order) => {
         setApprovalOrder(order);
 
         // Auto-populate
         if (order.items && order.items.length > 0) {
-            const autoLinks = order.items.map(item => ({
-                name: item.name || 'Design File',
-                url: item.canvaLink || '', // Only populate if strict match
-                type: item.canvaLink ? 'link' : 'file' // Default to file if no link exists
+            const autoLinks = await Promise.all(order.items.map(async (item) => {
+                let url = item.bookmarkPdfUrl || item.downloadUrl || item.canvaLink || '';
+                let type = (item.bookmarkPdfUrl || item.downloadUrl) ? 'file' : (item.canvaLink ? 'link' : 'file');
+                
+                // If the order item doesn't have any of these links, fetch the latest from the product database
+                if (!url) {
+                    try {
+                        const res = await getProductById(item.productId);
+                        if (res.success && res.product) {
+                            url = res.product.bookmarkPdfUrl || res.product.downloadUrl || res.product.canvaLink || '';
+                            type = (res.product.bookmarkPdfUrl || res.product.downloadUrl) ? 'file' : (res.product.canvaLink ? 'link' : 'file');
+                        }
+                    } catch (e) {
+                        console.error(`Failed to auto-resolve link for product ${item.productId}:`, e);
+                    }
+                }
+                
+                return {
+                    name: item.name || 'Design File',
+                    url: url,
+                    type: type
+                };
             }));
             setDownloadLinks(autoLinks);
         } else {
@@ -294,59 +312,93 @@ export default function AdminOrdersPage() {
                     }
                 }
 
+                let emailSentSuccessfully = false;
+                let emailErrors = [];
+
                 if (presetFiles.length > 0) {
-                    // Send preset delivery email with DNG attachment
                     console.log('📧 Sending preset delivery email with', presetFiles.length, 'DNG files');
-                    const emailRes = await fetch('/api/send-email', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            type: 'preset_delivery',
-                            order: approvalOrder,
-                            presetFiles: presetFiles
-                        })
-                    });
-                    const emailData = await emailRes.json();
-                    if (emailData.success) {
-                        toast.success({ title: 'Order approved! Presets sent via email with DNG attached 📸' });
-                    } else {
-                        toast.error({ title: `Order approved, but email failed: ${emailData.error || 'Unknown error'}` });
+                    try {
+                        const emailRes = await fetch('/api/send-email', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                type: 'preset_delivery',
+                                order: approvalOrder,
+                                presetFiles: presetFiles
+                            })
+                        });
+                        const emailData = await emailRes.json();
+                        if (emailData.success) {
+                            emailSentSuccessfully = true;
+                        } else {
+                            emailErrors.push(`Presets: ${emailData.error || 'Unknown error'}`);
+                        }
+                    } catch (e) {
+                        emailErrors.push(`Presets: ${e.message}`);
                     }
-                } else if (pdfFiles.length > 0) {
-                    // Send bookmark delivery email with PDF attached directly
+                }
+
+                if (pdfFiles.length > 0) {
                     console.log('📧 Sending bookmark delivery email with', pdfFiles.length, 'PDF file(s)');
-                    const emailRes = await fetch('/api/send-email', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            type: 'bookmark_delivery',
-                            order: approvalOrder,
-                            pdfFiles: pdfFiles
-                        })
-                    });
-                    const emailData = await emailRes.json();
-                    if (emailData.success) {
-                        toast.success({ title: 'Order approved! Bookmark PDF sent via email 🔖' });
-                    } else {
-                        toast.error({ title: `Order approved, but email failed: ${emailData.error || 'Unknown error'}` });
+                    try {
+                        const emailRes = await fetch('/api/send-email', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                type: 'bookmark_delivery',
+                                order: approvalOrder,
+                                pdfFiles: pdfFiles
+                            })
+                        });
+                        const emailData = await emailRes.json();
+                        if (emailData.success) {
+                            emailSentSuccessfully = true;
+                        } else {
+                            emailErrors.push(`Bookmarks: ${emailData.error || 'Unknown error'}`);
+                        }
+                    } catch (e) {
+                        emailErrors.push(`Bookmarks: ${e.message}`);
                     }
-                } else {
-                    // Regular approval email with download links
-                    const emailRes = await fetch('/api/send-email', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            type: 'order_approval',
-                            order: approvalOrder,
-                            downloadLinks: validLinks
-                        })
-                    });
-                    const emailData = await emailRes.json();
-                    if (emailData.success) {
-                        toast.success({ title: 'Order approved and email sent ✅' });
-                    } else {
-                        toast.error({ title: `Order approved, but email failed: ${emailData.error || 'Unknown error'}` });
+                }
+
+                if (presetFiles.length === 0 && pdfFiles.length === 0) {
+                    console.log('📧 Sending standard order approval email with download links');
+                    try {
+                        const emailRes = await fetch('/api/send-email', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                type: 'order_approval',
+                                order: approvalOrder,
+                                downloadLinks: validLinks
+                            })
+                        });
+                        const emailData = await emailRes.json();
+                        if (emailData.success) {
+                            emailSentSuccessfully = true;
+                        } else {
+                            emailErrors.push(`Approval Link Email: ${emailData.error || 'Unknown error'}`);
+                        }
+                    } catch (e) {
+                        emailErrors.push(`Approval Link Email: ${e.message}`);
                     }
+                }
+
+                if (emailErrors.length > 0) {
+                    toast.error({
+                        title: 'Order Approved, but Email Failed',
+                        description: emailErrors.join(', ')
+                    });
+                } else if (emailSentSuccessfully) {
+                    let successMsg = 'Order approved and delivery email(s) sent! ✅';
+                    if (presetFiles.length > 0 && pdfFiles.length > 0) {
+                        successMsg = 'Order approved! Presets (ZIP) and Bookmark (PDF) emails sent! 📸🔖';
+                    } else if (presetFiles.length > 0) {
+                        successMsg = 'Order approved! Presets sent via email with DNG attached 📸';
+                    } else if (pdfFiles.length > 0) {
+                        successMsg = 'Order approved! Bookmark PDF sent via email 🔖';
+                    }
+                    toast.success({ title: successMsg });
                 }
 
                 // Update local state
